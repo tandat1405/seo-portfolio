@@ -1,0 +1,30 @@
+.section { border-bottom: 1px solid var(--border); }
+.list { display: flex; flex-direction: column; gap: 14px; }
+.row {
+  display: flex; align-items: center; gap: 20px;
+  padding: 20px 24px; border-radius: var(--r);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  transition: all .22s;
+}
+.row:hover { border-color: var(--accent-light); transform: translateX(6px); }
+.badge {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: #eff6ff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.info { flex: 1; min-width: 0; }
+.name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.issuer { font-size: 13px; color: var(--text-2); }
+.year {
+  font-size: 13px; font-weight: 700;
+  color: var(--accent); background: #eff6ff;
+  padding: 5px 13px; border-radius: 50px;
+  white-space: nowrap; flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .row { padding: 16px; gap: 14px; }
+  .year { padding: 4px 10px; font-size: 12px; }
+}
