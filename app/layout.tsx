@@ -33,11 +33,13 @@ export const metadata: Metadata = {
     title: 'Dat Nguyen — Mobile & Frontend Developer',
     description: 'Building pixel-perfect mobile apps with React Native and fast web experiences with Next.js.',
     siteName: 'Dat Nguyen Portfolio',
+    images: [{ url: '/photo.jpg', width: 1200, height: 630, alt: 'Dat Nguyen' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Dat Nguyen — Mobile & Frontend Developer',
     description: 'Building pixel-perfect mobile apps with React Native and fast web experiences with Next.js.',
+    images: ['/photo.jpg'],
   },
   robots: { index: true, follow: true },
 }
