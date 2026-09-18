@@ -2,6 +2,7 @@ import Nav from '@/components/Nav'
 import Hero from '@/components/Hero'
 import About from '@/components/About'
 import Skills from '@/components/Skills'
+import Experience from '@/components/Experience'
 
 export default function Home() {
   return (
@@ -11,6 +12,7 @@ export default function Home() {
         <Hero />
         <About />
         <Skills />
+        <Experience />
       </main>
     </>
   )
