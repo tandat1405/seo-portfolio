@@ -1,3 +1,10 @@
+import Nav from '@/components/Nav'
+
 export default function Home() {
-  return <main>Portfolio coming soon</main>
+  return (
+    <>
+      <Nav />
+      <main>Portfolio coming soon</main>
+    </>
+  )
 }
