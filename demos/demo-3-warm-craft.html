@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo 3 — Warm Craft</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #7c3aed;
+      --accent-light: #a78bfa;
+      --accent-warm: #f59e0b;
+      --text: #1c1917;
+      --text-2: #57534e;
+      --text-3: #a8a29e;
+      --bg: #faf8f5;
+      --bg-2: #f5f0ea;
+      --glass: rgba(255,255,255,0.62);
+      --glass-border: rgba(255,255,255,0.85);
+      --card-bg: rgba(255,255,255,0.75);
+      --border: rgba(231,225,218,0.9);
+      --r: 20px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(120,80,40,0.07) 1px, transparent 0);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    .glow-blob {
+      position: fixed; border-radius: 50%;
+      filter: blur(100px); opacity: 0.35;
+      pointer-events: none; z-index: 0;
+    }
+    .gb1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(245,158,11,0.4) 0%, transparent 60%);
+      top: -200px; right: -100px;
+      animation: gb 14s ease-in-out infinite;
+    }
+    .gb2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 65%);
+      bottom: 10%; left: -150px;
+      animation: gb 11s ease-in-out infinite reverse;
+    }
+    @keyframes gb {
+      0%,100% { transform: translate(0,0); }
+      50% { transform: translate(30px,-25px); }
+    }
+
+    .wrap { position: relative; z-index: 1; }
+
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 6px 30px rgba(0,0,0,0.07);
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 56px; height: 66px;
+      background: rgba(250,248,245,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px; color: var(--text);
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent-warm); }
+    .nav-links { display: flex; gap: 2px; }
+    nav a {
+      text-decoration: none;
+      font-size: 13.5px; font-weight: 500;
+      color: var(--text-2);
+      padding: 7px 14px; border-radius: 8px;
+      transition: all .18s;
+    }
+    nav a:hover, nav a.active { color: var(--accent); background: rgba(124,58,237,0.06); }
+    .nav-hire {
+      padding: 9px 20px;
+      background: var(--accent);
+      color: white !important;
+      border-radius: 50px;
+      font-weight: 600;
+    }
+    .nav-hire:hover {
+      background: #6d28d9 !important;
+      transform: translateY(-1px);
+    }
+
+    section {
+      padding: 100px 56px 80px;
+      max-width: 1160px; margin: 0 auto;
+    }
+
+    .label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11.5px; font-weight: 700;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--accent-warm); margin-bottom: 12px;
+    }
+    .label::before {
+      content: '';
+      width: 18px; height: 2px;
+      background: var(--accent-warm);
+    }
+
+    h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(30px,4vw,46px);
+      letter-spacing: -0.5px; line-height: 1.15;
+      margin-bottom: 48px;
+    }
+
+    /* HERO */
+    #hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding-top: 66px;
+    }
+
+    .avatar-wrap {
+      position: relative; margin-bottom: 32px;
+    }
+    .avatar {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f59e0b, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 42px;
+      box-shadow: 0 8px 32px rgba(124,58,237,0.25), 0 0 0 4px white, 0 0 0 7px rgba(124,58,237,0.15);
+      margin: 0 auto;
+    }
+    .status-badge {
+      position: absolute; bottom: 0; right: -4px;
+      background: white;
+      border: 2px solid var(--bg);
+      border-radius: 50px;
+      padding: 4px 10px;
+      font-size: 11px; font-weight: 700;
+      color: #16a34a;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .live-dot {
+      width: 6px; height: 6px; background: #22c55e;
+      border-radius: 50%;
+      animation: blink 2.5s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    .hero-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(50px,8vw,88px);
+      letter-spacing: -3px; line-height: 0.95;
+      margin-bottom: 16px;
+    }
+    .hero-name i {
+      font-style: italic;
+      background: linear-gradient(135deg, var(--accent-warm) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-role {
+      font-size: 18px; color: var(--text-2);
+      margin-bottom: 16px; font-weight: 400;
+    }
+    .hero-desc {
+      font-size: 15.5px; color: var(--text-3);
+      max-width: 500px; margin: 0 auto 36px;
+      line-height: 1.8;
+    }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 28px; border-radius: 50px;
+      font-size: 14.5px; font-weight: 600;
+      text-decoration: none; cursor: pointer; border: none;
+      font-family: inherit; transition: all .22s;
+    }
+    .btn-accent {
+      background: var(--accent); color: white;
+      box-shadow: 0 4px 22px rgba(124,58,237,0.3);
+    }
+    .btn-accent:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 36px rgba(124,58,237,0.38);
+    }
+    .btn-warm {
+      background: rgba(245,158,11,0.1);
+      color: var(--accent-warm);
+      border: 1.5px solid rgba(245,158,11,0.25);
+    }
+    .btn-warm:hover {
+      background: rgba(245,158,11,0.15);
+      transform: translateY(-3px);
+    }
+
+    .hero-chips {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      justify-content: center; margin-top: 48px;
+    }
+    .chip {
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 13px; font-weight: 500;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      color: var(--text-2);
+      transition: all .2s;
+    }
+    .chip:hover {
+      color: var(--accent);
+      border-color: var(--accent-light);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(124,58,237,0.12);
+    }
+
+    /* ABOUT */
+    #about .about-wrap {
+      display: grid; grid-template-columns: 1fr 380px; gap: 28px;
+    }
+    .card {
+      padding: 32px; border-radius: var(--r);
+    }
+    .a-p {
+      font-size: 15px; color: var(--text-2);
+      line-height: 1.85; margin-bottom: 20px;
+    }
+    .a-locs { display: flex; flex-direction: column; gap: 12px; }
+    .a-loc {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 14px; color: var(--text-2);
+    }
+    .al-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: rgba(124,58,237,0.07);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; flex-shrink: 0;
+    }
+
+    .vals { display: flex; flex-direction: column; gap: 14px; }
+    .val {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 16px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.5);
+      transition: all .2s;
+    }
+    .val:hover {
+      background: rgba(255,255,255,0.85);
+      transform: translateX(5px);
+    }
+    .val-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-warm), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; flex-shrink: 0;
+    }
+    .val-t { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .val-d { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+
+    /* SKILLS */
+    #skills .sk-wrap {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 18px;
+    }
+    .sk-card {
+      padding: 26px;
+      border-radius: var(--r);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .sk-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.09);
+    }
+    .sk-head {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 22px;
+    }
+    .sk-ico {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .sk-cat { font-size: 14px; font-weight: 700; }
+    .sk-item { margin-bottom: 14px; }
+    .sk-row { display: flex; justify-content: space-between; margin-bottom: 7px; }
+    .sk-nm { font-size: 13.5px; font-weight: 500; }
+    .sk-pct { font-size: 12px; color: var(--text-3); }
+    .bar { height: 5px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; }
+    .bar-fill {
+      height: 100%; border-radius: 3px;
+      width: 0;
+      transition: width 1.3s cubic-bezier(.4,0,.2,1);
+    }
+    .bv { background: linear-gradient(90deg, var(--accent), var(--accent-light)); }
+    .bw { background: linear-gradient(90deg, var(--accent-warm), #f97316); }
+    .bg-g { background: linear-gradient(90deg, #10b981, #06b6d4); }
+
+    /* EXPERIENCE */
+    #experience .tl {
+      position: relative;
+      padding-left: 36px;
+    }
+    #experience .tl::before {
+      content: '';
+      position: absolute; left: 6px; top: 12px; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent-warm), var(--accent), transparent);
+    }
+    .ti { position: relative; margin-bottom: 28px; }
+    .ti-dot {
+      position: absolute; left: -32px; top: 19px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 0 0 3px rgba(245,158,11,0.35);
+      background: var(--accent-warm);
+    }
+    .ti-card {
+      padding: 26px;
+      border-radius: var(--r);
+      transition: all .25s;
+    }
+    .ti-card:hover {
+      transform: translateX(7px);
+      box-shadow: 0 14px 44px rgba(124,58,237,0.13);
+    }
+    .ti-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 4px; }
+    .ti-role {
+      font-family: 'DM Serif Display', serif;
+      font-size: 18px; font-weight: 400;
+    }
+    .ti-span {
+      font-size: 11.5px; font-weight: 700;
+      padding: 4px 12px; border-radius: 50px;
+      background: rgba(245,158,11,0.1); color: var(--accent-warm);
+    }
+    .ti-co { font-size: 13px; color: var(--text-2); margin-bottom: 10px; }
+    .ti-desc { font-size: 13.5px; color: var(--text-3); line-height: 1.75; }
+
+    /* PROJECTS */
+    #projects .pj-grid {
+      display: grid; grid-template-columns: repeat(2,1fr); gap: 18px;
+    }
+    .pj {
+      padding: 28px;
+      border-radius: var(--r);
+      transition: all .28s;
+      cursor: pointer;
+    }
+    .pj:hover {
+      transform: translateY(-7px);
+      box-shadow: 0 22px 58px rgba(124,58,237,0.16);
+    }
+    .pj-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .pj-ico {
+      width: 50px; height: 50px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .pj-link { font-size: 20px; color: var(--text-3); transition: all .2s; }
+    .pj:hover .pj-link { color: var(--accent); transform: translate(3px,-3px); }
+    .pj-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px; margin-bottom: 8px;
+    }
+    .pj-desc { font-size: 13.5px; color: var(--text-2); line-height: 1.7; margin-bottom: 18px; }
+    .pj-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+    .pj-tag {
+      padding: 4px 12px; border-radius: 50px;
+      font-size: 11.5px; font-weight: 500;
+      background: rgba(124,58,237,0.06);
+      color: var(--accent);
+      border: 1px solid rgba(124,58,237,0.12);
+    }
+
+    /* CERTIFICATIONS */
+    #certifications .ct-grid {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 18px;
+    }
+    .ct {
+      padding: 26px;
+      border-radius: var(--r);
+      transition: all .25s;
+    }
+    .ct:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 18px 48px rgba(124,58,237,0.14);
+    }
+    .ct-icon-wrap {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent-warm), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 16px;
+      transition: transform .2s;
+    }
+    .ct:hover .ct-icon-wrap { transform: rotate(-6deg) scale(1.08); }
+    .ct-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .ct-by { font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
+    .ct-yr {
+      display: inline-block;
+      font-size: 11.5px; font-weight: 700;
+      padding: 3px 12px; border-radius: 50px;
+      background: rgba(245,158,11,0.1); color: var(--accent-warm);
+    }
+
+    /* CONTACT */
+    #contact { padding-bottom: 100px; }
+    #contact .ct-wrap {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+    }
+    .ct-left h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px; margin-bottom: 14px;
+    }
+    .ct-left p { font-size: 14.5px; color: var(--text-2); line-height: 1.8; margin-bottom: 28px; }
+    .soc-list { display: flex; flex-direction: column; gap: 10px; }
+    .soc {
+      display: flex; align-items: center; gap: 13px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      text-decoration: none; color: var(--text);
+      font-size: 14px; font-weight: 500;
+      background: rgba(255,255,255,0.6);
+      transition: all .2s;
+    }
+    .soc:hover {
+      border-color: var(--accent-light);
+      color: var(--accent);
+      transform: translateX(5px);
+      background: rgba(255,255,255,0.85);
+    }
+    .soc-i {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--bg-2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+
+    .form { display: flex; flex-direction: column; gap: 14px; }
+    .fg { display: flex; flex-direction: column; gap: 6px; }
+    .fg label { font-size: 12.5px; font-weight: 700; color: var(--text-2); }
+    .fg input, .fg textarea {
+      padding: 13px 17px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.75);
+      border: 1.5px solid var(--border);
+      font-size: 14px; color: var(--text);
+      outline: none; font-family: inherit;
+      transition: all .2s;
+    }
+    .fg input:focus, .fg textarea:focus {
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 0 0 4px rgba(124,58,237,0.08);
+    }
+    .fg textarea { min-height: 110px; resize: vertical; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 28px;
+      font-size: 13px; color: var(--text-3);
+      position: relative; z-index: 1;
+    }
+
+    .fu { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+    .fu.vis { opacity: 1; transform: translateY(0); }
+    .fu:nth-child(2) { transition-delay: .1s; }
+    .fu:nth-child(3) { transition-delay: .2s; }
+  </style>
+</head>
+<body>
+<div class="glow-blob gb1"></div>
+<div class="glow-blob gb2"></div>
+
+<div class="wrap">
+  <nav>
+    <div class="logo">Dat<span>.</span></div>
+    <div class="nav-links">
+      <a href="#hero" class="active">Home</a>
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#experience">Experience</a>
+      <a href="#projects">Projects</a>
+      <a href="#certifications">Certs</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <a href="#contact" class="btn btn-accent nav-hire" style="padding:9px 20px;font-size:13px;border-radius:50px;">Hire Me ↗</a>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="avatar-wrap">
+      <div class="avatar">👨‍💻</div>
+      <div class="status-badge"><span class="live-dot"></span> Available</div>
+    </div>
+    <div class="hero-name">Dat<br><i>Nguyen</i></div>
+    <div class="hero-role">Mobile & Frontend Developer</div>
+    <p class="hero-desc">Building delightful mobile apps with React Native & Expo, and crafting fast web experiences with Next.js. Based in Vietnam, working globally.</p>
+    <div class="hero-btns">
+      <a href="#projects" class="btn btn-accent">View Work →</a>
+      <a href="#contact" class="btn btn-warm">Let's Talk ☕</a>
+    </div>
+    <div class="hero-chips">
+      <span class="chip">React Native</span>
+      <span class="chip">Expo</span>
+      <span class="chip">React.js</span>
+      <span class="chip">Next.js</span>
+      <span class="chip">TypeScript</span>
+      <span class="chip">Tailwind CSS</span>
+      <span class="chip">Figma</span>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="label">About Me</div>
+    <h2>The person<br>behind the pixels</h2>
+    <div class="about-wrap">
+      <div class="card glass fu">
+        <p class="a-p">I'm a passionate Mobile and Frontend Developer with 5+ years of experience building beautiful, performant digital products. I specialize in React Native for cross-platform mobile and Next.js for web applications.</p>
+        <p class="a-p">I care deeply about user experience and code quality. Every pixel matters, and every interaction should feel natural and delightful.</p>
+        <div class="a-locs">
+          <div class="a-loc"><div class="al-icon">📍</div><span>Ho Chi Minh City, Vietnam</span></div>
+          <div class="a-loc"><div class="al-icon">💼</div><span>Open to remote worldwide</span></div>
+          <div class="a-loc"><div class="al-icon">🎓</div><span>Computer Science, B.Sc.</span></div>
+          <div class="a-loc"><div class="al-icon">🌐</div><span>English & Vietnamese</span></div>
+        </div>
+      </div>
+      <div class="fu" style="display:flex;flex-direction:column;gap:14px;">
+        <div class="vals">
+          <div class="val glass">
+            <div class="val-icon">🎯</div>
+            <div><div class="val-t">Detail-oriented</div><div class="val-d">Pixel-perfect implementations from design to production.</div></div>
+          </div>
+          <div class="val glass">
+            <div class="val-icon">⚡</div>
+            <div><div class="val-t">Performance-first</div><div class="val-d">I obsess over Core Web Vitals and smooth 60fps animations.</div></div>
+          </div>
+          <div class="val glass">
+            <div class="val-icon">🤝</div>
+            <div><div class="val-t">Team player</div><div class="val-d">Clear communicator who thrives in async remote environments.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="label">Skills</div>
+    <h2>Technologies I<br>work with daily</h2>
+    <div class="sk-wrap">
+      <div class="sk-card glass fu">
+        <div class="sk-head">
+          <div class="sk-ico" style="background:rgba(124,58,237,0.1)">📱</div>
+          <div class="sk-cat">Mobile</div>
+        </div>
+        <div class="sk-item"><div class="sk-row"><span class="sk-nm">React Native</span><span class="sk-pct">95%</span></div><div class="bar"><div class="bar-fill bv" data-w="95"></div></div></div>
+        <div class="sk-item"><div class="sk-row"><span class="sk-nm">Expo & EAS</span><span class="sk-pct">92%</span></div><div class="bar"><div class="bar-fill bv" data-w="92"></div></div></div>
+        <div class="sk-item"><div class="sk-row"><span class="sk-nm">iOS / Android</span><span class="sk-pct">80%</span></div><div class="bar"><div class="bar-fill bv" data-w="80"></div></div></div>
+      </div>
+      <div class="sk-card glass fu">
+        <div class="sk-head">
+          <div class="sk-ico" style="background:rgba(245,158,11,0.1)">🌐</div>
+          <div class="sk-cat">Frontend Web</div>
+        </div>
+        <div class="sk-item"><div class="sk-row"><span class="sk-nm">React.js</span><span class="sk-pct">95%</span></div><div class="bar"><div class="bar-fill bw" data-w="95"></div></div></div>
+        <div class="sk-item"><div class="sk-row"><span class="sk-nm">Next.js</span><span class="sk-pct">90%</span></div><div class="bar"><div class="bar-fill bw" data-w="90"></div></div></div>
+        <div class="sk-item"><div class="sk-row"><span class="sk-nm">TypeScript</span><span class="sk-pct">88%</span></div><div class="bar"><div class="bar-fill bw" data-w="88"></div></div></div>
+      </div>
+      <div class="sk-card glass fu">
+        <div class="sk-head">
+          <div class="sk-ico" style="background:rgba(16,185,129,0.1)">🛠</div>
+          <div class="sk-cat">Tools & More</div>
+        </div>
+        <div class="sk-item"><div class="sk-row"><span class="sk-nm">Tailwind CSS</span><span class="sk-pct">95%</span></div><div class="bar"><div class="bar-fill bg-g" data-w="95"></div></div></div>
+        <div class="sk-item"><div class="sk-row"><span class="sk-nm">Figma</span><span class="sk-pct">84%</span></div><div class="bar"><div class="bar-fill bg-g" data-w="84"></div></div></div>
+        <div class="sk-item"><div class="sk-row"><span class="sk-nm">Node.js / APIs</span><span class="sk-pct">76%</span></div><div class="bar"><div class="bar-fill bg-g" data-w="76"></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="experience">
+    <div class="label">Experience</div>
+    <h2>Where I've<br>made an impact</h2>
+    <div class="tl">
+      <div class="ti fu">
+        <div class="ti-dot"></div>
+        <div class="ti-card glass">
+          <div class="ti-top">
+            <div class="ti-role">Senior Frontend Developer</div>
+            <div class="ti-span">2022 — Present</div>
+          </div>
+          <div class="ti-co">TechCorp Vietnam · Full-time</div>
+          <div class="ti-desc">Led development of a cross-platform React Native app for 100k+ users. Built complex screens, native integrations, and shipped via Expo EAS. Owned the Next.js marketing site achieving a 98 Lighthouse score.</div>
+        </div>
+      </div>
+      <div class="ti fu">
+        <div class="ti-dot"></div>
+        <div class="ti-card glass">
+          <div class="ti-top">
+            <div class="ti-role">Mobile Developer</div>
+            <div class="ti-span">2020 — 2022</div>
+          </div>
+          <div class="ti-co">StartupXYZ · Full-time</div>
+          <div class="ti-desc">Built and maintained React Native apps for iOS and Android. Implemented animations, push notifications, and deep linking. Reduced app crash rate by 40% through stability improvements.</div>
+        </div>
+      </div>
+      <div class="ti fu">
+        <div class="ti-dot"></div>
+        <div class="ti-card glass">
+          <div class="ti-top">
+            <div class="ti-role">Frontend Developer</div>
+            <div class="ti-span">2019 — 2020</div>
+          </div>
+          <div class="ti-co">Digital Agency · Contract</div>
+          <div class="ti-desc">Built responsive React web apps for clients across e-commerce and finance. Delivered pixel-perfect implementations from Figma designs and integrated REST APIs.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="label">Projects</div>
+    <h2>Things I'm<br>proud of building</h2>
+    <div class="pj-grid">
+      <div class="pj glass fu">
+        <div class="pj-top">
+          <div class="pj-ico" style="background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(167,139,250,0.15))">📱</div>
+          <div class="pj-link">↗</div>
+        </div>
+        <div class="pj-name">FitTrack Mobile</div>
+        <div class="pj-desc">A comprehensive fitness tracking app in React Native & Expo. Workout logging, progress charts, social sharing — 10k+ downloads on both stores.</div>
+        <div class="pj-tags"><span class="pj-tag">React Native</span><span class="pj-tag">Expo</span><span class="pj-tag">TypeScript</span></div>
+      </div>
+      <div class="pj glass fu">
+        <div class="pj-top">
+          <div class="pj-ico" style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(249,115,22,0.15))">🛒</div>
+          <div class="pj-link">↗</div>
+        </div>
+        <div class="pj-name">ShopNext</div>
+        <div class="pj-desc">Full-featured e-commerce platform built with Next.js App Router. Optimized for SEO and Core Web Vitals with server-side rendering and edge caching.</div>
+        <div class="pj-tags"><span class="pj-tag">Next.js</span><span class="pj-tag">Tailwind</span><span class="pj-tag">Stripe</span></div>
+      </div>
+      <div class="pj glass fu">
+        <div class="pj-top">
+          <div class="pj-ico" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(6,182,212,0.15))">🎨</div>
+          <div class="pj-link">↗</div>
+        </div>
+        <div class="pj-name">Design System</div>
+        <div class="pj-desc">Shared component library for mobile and web. Consistent design tokens, dark mode, accessibility, and Storybook documentation.</div>
+        <div class="pj-tags"><span class="pj-tag">React</span><span class="pj-tag">Storybook</span><span class="pj-tag">Rollup</span></div>
+      </div>
+      <div class="pj glass fu">
+        <div class="pj-top">
+          <div class="pj-ico" style="background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(236,72,153,0.12))">💬</div>
+          <div class="pj-link">↗</div>
+        </div>
+        <div class="pj-name">ChatFlow</div>
+        <div class="pj-desc">Real-time messaging app in React Native. E2E encrypted chats, voice notes, media sharing with Firebase and Socket.io backend.</div>
+        <div class="pj-tags"><span class="pj-tag">React Native</span><span class="pj-tag">Firebase</span><span class="pj-tag">Socket.io</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CERTIFICATIONS -->
+  <section id="certifications">
+    <div class="label">Certifications</div>
+    <h2>Credentials &<br>continuous learning</h2>
+    <div class="ct-grid">
+      <div class="ct glass fu">
+        <div class="ct-icon-wrap">📜</div>
+        <div class="ct-name">Meta React Native Specialist</div>
+        <div class="ct-by">Meta · Coursera</div>
+        <div class="ct-yr">2023</div>
+      </div>
+      <div class="ct glass fu">
+        <div class="ct-icon-wrap">⚡</div>
+        <div class="ct-name">Next.js & React — Complete Guide</div>
+        <div class="ct-by">Udemy</div>
+        <div class="ct-yr">2022</div>
+      </div>
+      <div class="ct glass fu">
+        <div class="ct-icon-wrap">☁️</div>
+        <div class="ct-name">AWS Cloud Practitioner</div>
+        <div class="ct-by">Amazon Web Services</div>
+        <div class="ct-yr">2023</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="label">Contact</div>
+    <h2>Let's build<br>something together</h2>
+    <div class="ct-wrap">
+      <div class="ct-left fu">
+        <h3>Open to new<br>opportunities</h3>
+        <p>Whether you have a mobile app idea, a web project, or just want to say hi — I'd love to hear from you. Currently available for freelance and full-time remote roles.</p>
+        <div class="soc-list">
+          <a href="#" class="soc"><div class="soc-i">🔗</div> linkedin.com/in/datnguyen</a>
+          <a href="#" class="soc"><div class="soc-i">⌨️</div> github.com/datnguyen</a>
+          <a href="#" class="soc"><div class="soc-i">✉️</div> dat@datnguyen.dev</a>
+        </div>
+      </div>
+      <div class="fu">
+        <form class="form">
+          <div class="fg"><label>Name</label><input type="text" placeholder="Your name"></div>
+          <div class="fg"><label>Email</label><input type="email" placeholder="your@email.com"></div>
+          <div class="fg"><label>Message</label><textarea placeholder="Tell me about your project..."></textarea></div>
+          <button type="submit" class="btn btn-accent" style="width:fit-content">Send Message →</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer>Crafted with care by Dat Nguyen · 2024</footer>
+</div>
+
+<script>
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.fu').forEach(el => io.observe(el));
+
+  const barIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.bar-fill').forEach(b => {
+          setTimeout(() => b.style.width = b.dataset.w + '%', 250);
+        });
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.sk-card').forEach(el => barIO.observe(el));
+
+  const navLinks = document.querySelectorAll('nav a');
+  const secIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const a = document.querySelector(`nav a[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('section[id]').forEach(s => secIO.observe(s));
+</script>
+</body>
+</html>

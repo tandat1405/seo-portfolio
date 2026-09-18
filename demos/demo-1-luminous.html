@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo 1 — Luminous</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-glow: rgba(99,102,241,0.25);
+      --glass: rgba(255,255,255,0.55);
+      --glass-border: rgba(255,255,255,0.85);
+      --glass-shadow: 0 8px 32px rgba(99,102,241,0.1);
+      --text: #1e1b4b;
+      --text-2: #6b7280;
+      --text-3: #9ca3af;
+      --bg: #eef2ff;
+      --r: 20px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    .bg-layer {
+      position: fixed; inset: 0; z-index: 0;
+      background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 50%, #ede9fe 100%);
+      pointer-events: none;
+    }
+
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.45;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .b1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(129,140,248,0.5) 0%, transparent 65%);
+      top: -200px; right: -250px;
+      animation: drift 10s ease-in-out infinite;
+    }
+    .b2 {
+      width: 550px; height: 550px;
+      background: radial-gradient(circle, rgba(196,181,253,0.45) 0%, transparent 65%);
+      bottom: 0; left: -180px;
+      animation: drift 13s ease-in-out infinite reverse;
+    }
+    .b3 {
+      width: 450px; height: 450px;
+      background: radial-gradient(circle, rgba(110,231,183,0.3) 0%, transparent 65%);
+      top: 45%; left: 38%;
+      animation: drift 9s ease-in-out infinite 3s;
+    }
+    @keyframes drift {
+      0%,100% { transform: translate(0,0) scale(1); }
+      40% { transform: translate(40px,-35px) scale(1.06); }
+      70% { transform: translate(-25px,28px) scale(0.94); }
+    }
+
+    .wrap { position: relative; z-index: 1; }
+
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 16px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      display: flex; align-items: center; gap: 4px;
+      padding: 10px 20px;
+      border-radius: 50px;
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.95);
+      box-shadow: 0 4px 28px rgba(99,102,241,0.14);
+      width: auto; max-width: calc(100% - 32px);
+    }
+    .nav-links { display: flex; align-items: center; gap: 4px; }
+    nav a {
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 500;
+      padding: 7px 15px;
+      border-radius: 50px;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    nav a:hover, nav a.active {
+      color: var(--accent);
+      background: rgba(99,102,241,0.1);
+    }
+    .menu-btn {
+      display: none;
+      background: none; border: none; cursor: pointer;
+      padding: 6px; border-radius: 10px;
+      color: var(--text-2);
+      font-size: 20px; line-height: 1;
+      transition: background .2s;
+    }
+    .menu-btn:hover { background: rgba(99,102,241,0.1); color: var(--accent); }
+
+    /* Mobile nav dropdown */
+    .nav-mobile-menu {
+      display: none;
+      position: fixed;
+      top: 76px; left: 16px; right: 16px;
+      z-index: 199;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.95);
+      box-shadow: 0 8px 32px rgba(99,102,241,0.14);
+      border-radius: 20px;
+      padding: 12px;
+      flex-direction: column; gap: 4px;
+    }
+    .nav-mobile-menu.open { display: flex; }
+    .nav-mobile-menu a {
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 15px; font-weight: 500;
+      padding: 12px 18px;
+      border-radius: 12px;
+      transition: all .18s;
+    }
+    .nav-mobile-menu a:hover, .nav-mobile-menu a.active {
+      color: var(--accent);
+      background: rgba(99,102,241,0.08);
+    }
+
+    /* SECTIONS */
+    section {
+      min-height: 100vh;
+      padding: 110px 60px 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      font-size: clamp(28px,4.5vw,46px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 48px;
+      line-height: 1.15;
+    }
+
+    /* HERO */
+    #hero {
+      display: flex;
+      align-items: center;
+      gap: 64px;
+      padding-top: 100px;
+      min-height: 100vh;
+    }
+
+    .hero-left { flex: 1; }
+
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.18);
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    .badge-dot {
+      width: 8px; height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: blink 2.5s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity:1; transform:scale(1); }
+      50% { opacity:.5; transform:scale(.7); }
+    }
+
+    h1 {
+      font-size: clamp(36px,6vw,74px);
+      font-weight: 900;
+      letter-spacing: -3px;
+      line-height: 1.05;
+      margin-bottom: 16px;
+    }
+    .grad {
+      background: linear-gradient(135deg, var(--accent) 0%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 18px;
+      color: var(--text-2);
+      margin-bottom: 16px;
+      font-weight: 400;
+    }
+    .hero-desc {
+      font-size: 15px;
+      color: var(--text-3);
+      line-height: 1.75;
+      max-width: 460px;
+      margin-bottom: 36px;
+    }
+    .cta { display: flex; gap: 14px; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 28px;
+      border-radius: 50px;
+      font-size: 14.5px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .25s;
+      border: none; cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 22px var(--accent-glow);
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 36px var(--accent-glow);
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,0.65);
+      color: var(--text);
+      border: 1px solid rgba(99,102,241,0.2);
+      backdrop-filter: blur(10px);
+    }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.85);
+      transform: translateY(-3px);
+      border-color: var(--accent-light);
+    }
+
+    .hero-right { flex: 0 0 380px; }
+
+    .hero-card {
+      padding: 28px;
+      border-radius: 28px;
+    }
+
+    .pills {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 24px;
+    }
+    .pill {
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 12.5px;
+      font-weight: 500;
+      background: rgba(99,102,241,0.07);
+      color: var(--accent);
+      border: 1px solid rgba(99,102,241,0.14);
+      transition: all .2s;
+    }
+    .pill:hover { background: rgba(99,102,241,0.14); transform: translateY(-1px); }
+
+    .stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    .stat {
+      padding: 18px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.55);
+      text-align: center;
+      transition: transform .2s;
+    }
+    .stat:hover { transform: translateY(-4px); }
+    .stat-n {
+      font-size: 28px; font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .stat-l {
+      font-size: 11.5px; color: var(--text-3);
+      margin-top: 4px;
+    }
+
+    /* ABOUT */
+    #about .grid2 {
+      display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 28px;
+    }
+    .about-photo-strip {
+      margin-top: 32px;
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      width: 320px;
+    }
+    .about-photo-strip img {
+      width: 100%; aspect-ratio: 3/2;
+      height: auto;
+      object-fit: cover;
+      object-position: center 20%;
+      display: block;
+      transition: transform .6s ease;
+    }
+    .about-photo-strip:hover img { transform: scale(1.03); }
+    .about-photo-strip-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(99,102,241,0.55) 0%, transparent 55%);
+    }
+    .about-photo-strip-label {
+      position: absolute; bottom: 16px; left: 18px; right: 18px;
+      display: flex; align-items: flex-end; justify-content: space-between;
+    }
+    .apl-name {
+      font-size: 15px; font-weight: 800;
+      color: white; letter-spacing: -0.3px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    .apl-role {
+      font-size: 11px; color: rgba(255,255,255,0.8);
+      margin-top: 3px; font-weight: 500;
+    }
+    .apl-tag {
+      padding: 5px 12px; border-radius: 50px;
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.35);
+      font-size: 11px; font-weight: 600;
+      color: white; white-space: nowrap;
+    }
+    .card {
+      padding: 28px;
+      border-radius: var(--r);
+    }
+    .about-p {
+      font-size: 15px; color: var(--text-2); line-height: 1.8;
+      margin-bottom: 20px;
+    }
+    .facts { display: flex; flex-direction: column; gap: 14px; }
+    .fact {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 14px; color: var(--text-2);
+    }
+    .fact-i {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: rgba(99,102,241,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; flex-shrink: 0;
+    }
+
+    /* SKILLS */
+    #skills .grid4 {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+    }
+    .skill-cat {
+      padding: 24px;
+      border-radius: var(--r);
+    }
+    .skill-cat h3 {
+      font-size: 11.5px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 20px;
+    }
+    .sk { margin-bottom: 16px; }
+    .sk-row {
+      display: flex; justify-content: space-between;
+      font-size: 13.5px; font-weight: 500;
+      color: var(--text); margin-bottom: 7px;
+    }
+    .sk-row span:last-child { color: var(--text-3); font-size: 12px; }
+    .bar {
+      height: 5px;
+      background: rgba(99,102,241,0.1);
+      border-radius: 3px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      border-radius: 3px;
+      width: 0;
+      transition: width 1.3s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* EXPERIENCE */
+    #experience .timeline {
+      position: relative; padding-left: 44px;
+    }
+    #experience .timeline::before {
+      content: '';
+      position: absolute; left: 7px; top: 8px; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent) 0%, transparent 100%);
+    }
+    .t-item { position: relative; margin-bottom: 28px; }
+    .t-dot {
+      position: absolute; left: -40px; top: 18px;
+      width: 16px; height: 16px;
+      background: var(--accent); border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .t-card {
+      padding: 24px;
+      border-radius: var(--r);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .t-card:hover {
+      transform: translateX(6px);
+      box-shadow: 0 14px 44px rgba(99,102,241,0.16);
+    }
+    .t-date { font-size: 11.5px; font-weight: 700; letter-spacing: 1px; color: var(--accent); margin-bottom: 6px; }
+    .t-role { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+    .t-co { font-size: 13px; color: var(--text-2); margin-bottom: 10px; }
+    .t-desc { font-size: 13.5px; color: var(--text-3); line-height: 1.7; }
+
+    /* PROJECTS */
+    #projects .grid2p {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+    }
+    .proj {
+      padding: 24px;
+      border-radius: var(--r);
+      transition: all .3s;
+      cursor: pointer;
+    }
+    .proj:hover {
+      transform: translateY(-7px);
+      box-shadow: 0 24px 64px rgba(99,102,241,0.22);
+    }
+    .proj-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 18px;
+    }
+    .proj-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .proj-desc { font-size: 13.5px; color: var(--text-2); line-height: 1.7; margin-bottom: 18px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 7px; }
+    .tag {
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 11.5px; font-weight: 500;
+      background: rgba(99,102,241,0.07);
+      color: var(--accent);
+      border: 1px solid rgba(99,102,241,0.13);
+    }
+
+    /* CERTS */
+    #certifications .grid3 {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .cert {
+      padding: 24px;
+      border-radius: var(--r);
+      display: flex; gap: 18px; align-items: flex-start;
+      transition: all .25s;
+    }
+    .cert:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 18px 52px rgba(99,102,241,0.16);
+    }
+    .cert-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #a855f7);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .cert-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .cert-by { font-size: 12.5px; color: var(--text-2); margin-bottom: 6px; }
+    .cert-yr { font-size: 12px; color: var(--accent); font-weight: 600; }
+
+    /* CONTACT */
+    #contact { text-align: center; }
+    .contact-card {
+      max-width: 580px; margin: 0 auto;
+      padding: 40px; border-radius: 28px;
+    }
+    .contact-p {
+      font-size: 15.5px; color: var(--text-2); line-height: 1.7;
+      margin-bottom: 32px;
+    }
+    .form { display: flex; flex-direction: column; gap: 14px; text-align: left; }
+    .fg { display: flex; flex-direction: column; gap: 7px; }
+    .fg label { font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+    .fg input, .fg textarea {
+      padding: 13px 17px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(99,102,241,0.18);
+      font-size: 14.5px; color: var(--text);
+      outline: none;
+      transition: all .2s;
+      font-family: inherit;
+    }
+    .fg input:focus, .fg textarea:focus {
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.88);
+      box-shadow: 0 0 0 4px var(--accent-glow);
+    }
+    .fg textarea { min-height: 110px; resize: vertical; }
+
+    footer {
+      text-align: center;
+      padding: 32px 20px;
+      font-size: 13.5px;
+      color: var(--text-3);
+      position: relative; z-index: 1;
+    }
+
+    /* ANIMATIONS */
+    .fu {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity .65s ease, transform .65s ease;
+    }
+    .fu.vis { opacity: 1; transform: translateY(0); }
+    .fu:nth-child(2) { transition-delay: .1s; }
+    .fu:nth-child(3) { transition-delay: .2s; }
+    .fu:nth-child(4) { transition-delay: .3s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      #skills .grid4 { grid-template-columns: repeat(2, 1fr); }
+      #certifications .grid3 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .menu-btn { display: flex; align-items: center; justify-content: center; }
+
+      section { padding: 90px 20px 60px; min-height: auto; }
+
+      #hero {
+        flex-direction: column;
+        gap: 32px;
+        padding-top: 90px;
+        align-items: flex-start;
+        min-height: 100vh;
+      }
+      .hero-right { flex: none; width: 100%; }
+      .hero-desc { max-width: 100%; }
+
+      #about .grid2 { grid-template-columns: 1fr; }
+      #skills .grid4 { grid-template-columns: repeat(2, 1fr); }
+      #projects .grid2p { grid-template-columns: 1fr; }
+      #certifications .grid3 { grid-template-columns: 1fr; }
+
+      .contact-card { padding: 24px; }
+
+      h1 { letter-spacing: -2px; }
+    }
+
+    @media (max-width: 480px) {
+      #skills .grid4 { grid-template-columns: 1fr; }
+      #certifications .grid3 { grid-template-columns: 1fr; }
+
+      h1 { letter-spacing: -1.5px; }
+      .hero-sub { font-size: 16px; }
+
+      .btn { padding: 12px 22px; font-size: 14px; }
+
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .stat-n { font-size: 24px; }
+
+      #experience .timeline { padding-left: 32px; }
+      .t-dot { left: -28px; }
+    }
+  </style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<div class="wrap">
+  <nav id="main-nav">
+    <div class="nav-links">
+      <a href="#hero" class="active">Home</a>
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#experience">Experience</a>
+      <a href="#projects">Projects</a>
+      <a href="#certifications">Certs</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <button class="menu-btn" id="menu-btn" aria-label="Menu">☰</button>
+  </nav>
+
+  <div class="nav-mobile-menu" id="mobile-menu">
+    <a href="#hero" class="active">Home</a>
+    <a href="#about">About</a>
+    <a href="#skills">Skills</a>
+    <a href="#experience">Experience</a>
+    <a href="#projects">Projects</a>
+    <a href="#certifications">Certs</a>
+    <a href="#contact">Contact</a>
+  </div>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-left">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Available for opportunities
+      </div>
+      <h1>Hi, I'm<br><span class="grad">Dat Nguyen</span></h1>
+      <p class="hero-sub">Mobile & Frontend Developer</p>
+      <p class="hero-desc">Building pixel-perfect mobile experiences with React Native and crafting fast, SEO-friendly web apps with Next.js. Based in Vietnam, working globally.</p>
+      <div class="cta">
+        <a href="#projects" class="btn btn-primary">View My Work →</a>
+        <a href="#contact" class="btn btn-ghost">Let's Talk</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-card glass">
+        <div class="label">Tech Stack</div>
+        <div class="pills">
+          <span class="pill">React Native</span>
+          <span class="pill">Expo</span>
+          <span class="pill">React.js</span>
+          <span class="pill">Next.js</span>
+          <span class="pill">TypeScript</span>
+          <span class="pill">Tailwind CSS</span>
+          <span class="pill">Node.js</span>
+          <span class="pill">Figma</span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat"><div class="stat-n">5+</div><div class="stat-l">Years Exp.</div></div>
+          <div class="stat"><div class="stat-n">20+</div><div class="stat-l">Projects</div></div>
+          <div class="stat"><div class="stat-n">10+</div><div class="stat-l">Clients</div></div>
+          <div class="stat"><div class="stat-n">3</div><div class="stat-l">Certifications</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="label">About Me</div>
+    <h2>The person behind the code</h2>
+    <div class="grid2">
+      <div class="card glass fu">
+        <p class="about-p">I'm a passionate Mobile and Frontend Developer with 5+ years of experience building beautiful, performant digital products. I specialize in React Native for cross-platform mobile apps and Next.js for web applications that are fast, accessible, and SEO-friendly.</p>
+        <p class="about-p">I care deeply about user experience and code quality. Every pixel matters, and every interaction should feel delightful. I thrive in collaborative environments and love turning complex problems into elegant solutions.</p>
+        <a href="#contact" class="btn btn-primary" style="width:fit-content">Get In Touch →</a>
+      </div>
+      <div class="card glass fu">
+        <div class="facts">
+          <div class="fact"><div class="fact-i">📍</div><span>Ho Chi Minh City, Vietnam</span></div>
+          <div class="fact"><div class="fact-i">💼</div><span>Open to remote opportunities</span></div>
+          <div class="fact"><div class="fact-i">🎓</div><span>Computer Science Graduate</span></div>
+          <div class="fact"><div class="fact-i">📱</div><span>Mobile-first thinker</span></div>
+          <div class="fact"><div class="fact-i">🌐</div><span>Fluent in English & Vietnamese</span></div>
+          <div class="fact"><div class="fact-i">☕</div><span>Coffee-driven development</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="about-photo-strip glass fu">
+      <img src="./photo.jpg" alt="Dat Nguyen">
+      <div class="about-photo-strip-overlay"></div>
+      <div class="about-photo-strip-label">
+        <div>
+          <div class="apl-name">Dat Nguyen</div>
+          <div class="apl-role">Mobile & Frontend Developer · Ho Chi Minh City</div>
+        </div>
+        <div class="apl-tag">Open to work ✦</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="label">Skills</div>
+    <h2>Technologies I work with</h2>
+    <div class="grid4">
+      <div class="skill-cat glass fu">
+        <h3>Mobile</h3>
+        <div class="sk"><div class="sk-row"><span>React Native</span><span>95%</span></div><div class="bar"><div class="bar-fill" data-w="95"></div></div></div>
+        <div class="sk"><div class="sk-row"><span>Expo</span><span>92%</span></div><div class="bar"><div class="bar-fill" data-w="92"></div></div></div>
+        <div class="sk"><div class="sk-row"><span>iOS / Android</span><span>80%</span></div><div class="bar"><div class="bar-fill" data-w="80"></div></div></div>
+      </div>
+      <div class="skill-cat glass fu">
+        <h3>Frontend</h3>
+        <div class="sk"><div class="sk-row"><span>React.js</span><span>95%</span></div><div class="bar"><div class="bar-fill" data-w="95"></div></div></div>
+        <div class="sk"><div class="sk-row"><span>Next.js</span><span>90%</span></div><div class="bar"><div class="bar-fill" data-w="90"></div></div></div>
+        <div class="sk"><div class="sk-row"><span>TypeScript</span><span>88%</span></div><div class="bar"><div class="bar-fill" data-w="88"></div></div></div>
+      </div>
+      <div class="skill-cat glass fu">
+        <h3>Styling & UI</h3>
+        <div class="sk"><div class="sk-row"><span>Tailwind CSS</span><span>95%</span></div><div class="bar"><div class="bar-fill" data-w="95"></div></div></div>
+        <div class="sk"><div class="sk-row"><span>Figma</span><span>84%</span></div><div class="bar"><div class="bar-fill" data-w="84"></div></div></div>
+        <div class="sk"><div class="sk-row"><span>CSS Animations</span><span>90%</span></div><div class="bar"><div class="bar-fill" data-w="90"></div></div></div>
+      </div>
+      <div class="skill-cat glass fu">
+        <h3>Backend & Tools</h3>
+        <div class="sk"><div class="sk-row"><span>Node.js</span><span>75%</span></div><div class="bar"><div class="bar-fill" data-w="75"></div></div></div>
+        <div class="sk"><div class="sk-row"><span>REST APIs</span><span>88%</span></div><div class="bar"><div class="bar-fill" data-w="88"></div></div></div>
+        <div class="sk"><div class="sk-row"><span>Git / CI-CD</span><span>86%</span></div><div class="bar"><div class="bar-fill" data-w="86"></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="experience">
+    <div class="label">Experience</div>
+    <h2>Where I've worked</h2>
+    <div class="timeline">
+      <div class="t-item fu">
+        <div class="t-dot"></div>
+        <div class="t-card glass">
+          <div class="t-date">2022 — PRESENT</div>
+          <div class="t-role">Senior Frontend Developer</div>
+          <div class="t-co">TechCorp Vietnam · Full-time</div>
+          <div class="t-desc">Led development of a cross-platform React Native app serving 100k+ users. Built complex screens, integrated native APIs, and shipped releases via Expo EAS. Also owned the Next.js marketing site with 98 Lighthouse score.</div>
+        </div>
+      </div>
+      <div class="t-item fu">
+        <div class="t-dot"></div>
+        <div class="t-card glass">
+          <div class="t-date">2020 — 2022</div>
+          <div class="t-role">Mobile Developer</div>
+          <div class="t-co">StartupXYZ · Full-time</div>
+          <div class="t-desc">Developed and maintained React Native apps for iOS and Android. Implemented complex UI animations, push notifications, and deep linking. Reduced app crash rate by 40% through stability improvements.</div>
+        </div>
+      </div>
+      <div class="t-item fu">
+        <div class="t-dot"></div>
+        <div class="t-card glass">
+          <div class="t-date">2019 — 2020</div>
+          <div class="t-role">Frontend Developer</div>
+          <div class="t-co">Digital Agency · Contract</div>
+          <div class="t-desc">Built responsive React web apps for clients across e-commerce and finance. Delivered pixel-perfect implementations from Figma designs and integrated REST APIs.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="label">Projects</div>
+    <h2>Things I've built</h2>
+    <div class="grid2p">
+      <div class="proj glass fu">
+        <div class="proj-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">📱</div>
+        <div class="proj-title">FitTrack Mobile</div>
+        <div class="proj-desc">A comprehensive fitness tracking app built with React Native & Expo. Features workout logging, progress charts, and social sharing with 10k+ downloads.</div>
+        <div class="tags"><span class="tag">React Native</span><span class="tag">Expo</span><span class="tag">TypeScript</span></div>
+      </div>
+      <div class="proj glass fu">
+        <div class="proj-icon" style="background:linear-gradient(135deg,#0ea5e9,#6366f1)">🌐</div>
+        <div class="proj-title">ShopNext</div>
+        <div class="proj-desc">Full-featured e-commerce platform with Next.js App Router. Optimized for SEO and Core Web Vitals with server-side rendering and edge caching.</div>
+        <div class="tags"><span class="tag">Next.js</span><span class="tag">Tailwind</span><span class="tag">Stripe</span></div>
+      </div>
+      <div class="proj glass fu">
+        <div class="proj-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">🎨</div>
+        <div class="proj-title">UI Component Library</div>
+        <div class="proj-desc">A shared design system used across mobile and web. Consistent design tokens, accessible components, dark mode support, and full Storybook documentation.</div>
+        <div class="tags"><span class="tag">React</span><span class="tag">Storybook</span><span class="tag">Rollup</span></div>
+      </div>
+      <div class="proj glass fu">
+        <div class="proj-icon" style="background:linear-gradient(135deg,#10b981,#0ea5e9)">💬</div>
+        <div class="proj-title">ChatFlow</div>
+        <div class="proj-desc">Real-time messaging app built in React Native. End-to-end encrypted messages, group chats, voice notes, and media sharing with Firebase backend.</div>
+        <div class="tags"><span class="tag">React Native</span><span class="tag">Socket.io</span><span class="tag">Firebase</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CERTIFICATIONS -->
+  <section id="certifications">
+    <div class="label">Certifications</div>
+    <h2>Credentials & learning</h2>
+    <div class="grid3">
+      <div class="cert glass fu">
+        <div class="cert-icon">📜</div>
+        <div>
+          <div class="cert-name">Meta React Native Specialist</div>
+          <div class="cert-by">Meta (Coursera)</div>
+          <div class="cert-yr">Issued 2023</div>
+        </div>
+      </div>
+      <div class="cert glass fu">
+        <div class="cert-icon">⚡</div>
+        <div>
+          <div class="cert-name">Next.js & React — Complete Guide</div>
+          <div class="cert-by">Udemy</div>
+          <div class="cert-yr">Issued 2022</div>
+        </div>
+      </div>
+      <div class="cert glass fu">
+        <div class="cert-icon">☁️</div>
+        <div>
+          <div class="cert-name">AWS Cloud Practitioner</div>
+          <div class="cert-by">Amazon Web Services</div>
+          <div class="cert-yr">Issued 2023</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="label">Contact</div>
+    <h2>Let's work together</h2>
+    <div class="contact-card glass">
+      <p class="contact-p">Have a project in mind? I'd love to hear about it. Send me a message and let's build something great together.</p>
+      <form class="form">
+        <div class="fg"><label>Name</label><input type="text" placeholder="Your name"></div>
+        <div class="fg"><label>Email</label><input type="email" placeholder="your@email.com"></div>
+        <div class="fg"><label>Message</label><textarea placeholder="Tell me about your project..."></textarea></div>
+        <button type="submit" class="btn btn-primary" style="width:fit-content">Send Message →</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>Built with care by Dat Nguyen · 2024</footer>
+</div>
+
+<script>
+  const menuBtn = document.getElementById('menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  menuBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('open');
+    menuBtn.textContent = mobileMenu.classList.contains('open') ? '✕' : '☰';
+  });
+  mobileMenu.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      mobileMenu.classList.remove('open');
+      menuBtn.textContent = '☰';
+    });
+  });
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('vis');
+        e.target.querySelectorAll('.bar-fill').forEach(b => {
+          setTimeout(() => b.style.width = b.dataset.w + '%', 200);
+        });
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.fu').forEach(el => io.observe(el));
+
+  const skillIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.bar-fill').forEach(b => {
+          setTimeout(() => b.style.width = b.dataset.w + '%', 300);
+        });
+      }
+    });
+  }, { threshold: 0.2 });
+  document.querySelectorAll('.skill-cat').forEach(el => skillIO.observe(el));
+
+  const allNavLinks = document.querySelectorAll('nav a, #mobile-menu a');
+  const secIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        allNavLinks.forEach(l => l.classList.remove('active'));
+        document.querySelectorAll(`a[href="#${e.target.id}"]`).forEach(a => a.classList.add('active'));
+      }
+    });
+  }, { threshold: 0.35 });
+  document.querySelectorAll('section[id]').forEach(s => secIO.observe(s));
+</script>
+</body>
+</html>
