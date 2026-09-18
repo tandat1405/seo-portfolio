@@ -12,8 +12,10 @@ export default function Contact() {
     e.preventDefault()
     const form = e.currentTarget
     const name = (form.elements.namedItem('name') as HTMLInputElement).value
+    const email = (form.elements.namedItem('email') as HTMLInputElement).value
     const message = (form.elements.namedItem('message') as HTMLTextAreaElement).value
-    window.location.href = `mailto:${personal.email}?subject=Portfolio inquiry from ${encodeURIComponent(name)}&body=${encodeURIComponent(message)}`
+    const body = `From: ${name} <${email}>\n\n${message}`
+    window.location.href = `mailto:${personal.email}?subject=Portfolio inquiry from ${encodeURIComponent(name)}&body=${encodeURIComponent(body)}`
   }
 
   return (
