@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://datnguyen.dev/sitemap.xml
+Sitemap: https://datdev.vercel.app/sitemap.xml

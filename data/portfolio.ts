@@ -1,50 +1,51 @@
 export const personal = {
-  name: 'Dat Nguyen',
-  title: 'Mobile & Frontend Developer',
-  tagline: 'Mobile & <em>Frontend</em> Developer.',
-  sub: 'React Native · Expo · React.js · Next.js',
-  desc: 'I build fast, beautiful mobile apps and web experiences. Detail-oriented developer based in Vietnam, available for remote work worldwide.',
+  name: 'Nguyen Tan Dat',
+  title: 'Senior React Native Engineer',
+  tagline: 'Senior React Native <em>Engineer.</em>',
+  sub: 'React Native · Expo · TypeScript · React.js',
+  desc: 'Senior React Native Engineer with 8+ years building production-grade apps across healthcare, real estate, sports and telecom. Pioneering AI-assisted development workflows to ship better software faster.',
   location: 'Ho Chi Minh City, Vietnam',
-  email: 'dat@datnguyen.dev',
-  linkedin: 'https://linkedin.com/in/datnguyen',
-  github: 'https://github.com/datnguyen',
+  email: 'tandat1405@gmail.com',
+  linkedin: 'https://www.linkedin.com/in/tandat1405/',
+  github: 'https://github.com/tandat1405',
   availableForWork: true,
 }
 
 export const metrics = [
-  { icon: '📱', bg: '#eff6ff', label: 'Mobile Apps Shipped', value: '12+' },
-  { icon: '🌐', bg: '#f0fdf4', label: 'Web Projects', value: '20+' },
-  { icon: '⭐', bg: '#fefce8', label: 'Client Satisfaction', value: '100%' },
-  { icon: '🏆', bg: '#fdf4ff', label: 'Years of Experience', value: '5+' },
+  { icon: '📱', bg: '#eff6ff', label: 'Live Apps Shipped', value: '7+' },
+  { icon: '🌍', bg: '#f0fdf4', label: 'Countries Worked With', value: '5+' },
+  { icon: '🏆', bg: '#fefce8', label: 'Years of Experience', value: '8+' },
+  { icon: '👥', bg: '#fdf4ff', label: 'Teams Led', value: '3+' },
 ]
 
 export const whatIBring = [
-  'Cross-platform React Native development',
-  'Next.js apps with great Core Web Vitals',
-  'TypeScript-first, maintainable codebases',
-  'Pixel-perfect UI from Figma designs',
+  'React Native & Expo cross-platform development',
+  'Clean Architecture & Monorepo (Turborepo)',
+  'Performance optimization & memory profiling',
   'App Store & Google Play deployments',
-  'Strong communication & remote experience',
+  'AI-assisted development workflows',
+  'Team leadership & technical mentoring',
 ]
 
 export type Skill = { name: string; pct: number }
 
 export const skillsMobile: Skill[] = [
   { name: 'React Native', pct: 95 },
-  { name: 'Expo', pct: 92 },
-  { name: 'iOS / Android', pct: 80 },
+  { name: 'Expo / EAS', pct: 92 },
+  { name: 'iOS / Android', pct: 85 },
 ]
 
 export const skillsWeb: Skill[] = [
-  { name: 'React.js', pct: 95 },
-  { name: 'Next.js', pct: 90 },
-  { name: 'TypeScript', pct: 88 },
+  { name: 'TypeScript', pct: 93 },
+  { name: 'React.js', pct: 90 },
+  { name: 'Next.js', pct: 85 },
 ]
 
 export const techTools = [
-  'Tailwind CSS', 'Figma', 'Node.js', 'REST APIs', 'GraphQL',
-  'Git', 'GitHub Actions', 'Expo EAS', 'Firebase', 'Supabase',
-  'Vercel', 'Redux', 'Zustand', 'React Query',
+  'Turborepo', 'Clean Architecture', 'Redux Toolkit', 'Zustand',
+  'React Query', 'Firebase', 'AWS / Cognito', 'GraphQL',
+  'GitHub Actions', 'Bitrise', 'Jest / Playwright', 'Datadog',
+  'SonarCloud', 'NativeWind',
 ]
 
 export type Experience = {
@@ -57,25 +58,32 @@ export type Experience = {
 
 export const experience: Experience[] = [
   {
-    date: '2022 — Present',
-    company: 'TechCorp Vietnam',
-    role: 'Senior Frontend Developer',
-    desc: 'Led the development of a cross-platform React Native app serving 100k+ users. Built complex screens, integrated native APIs, and shipped releases via Expo EAS. Owned the Next.js marketing site achieving a 98 Lighthouse performance score.',
-    tags: ['React Native', 'Next.js', 'TypeScript', 'Expo EAS'],
+    date: 'June 2024 — Present',
+    company: 'KMS Technology, Inc',
+    role: 'Senior React Native Engineer',
+    desc: 'Rebuilt legacy native iOS, Android & Vue apps into a unified React Native + Expo solution serving P&G, Pfizer, Sanofi and other healthcare organizations. Architected Clean Architecture monorepo with Turborepo, improved frame rate from 1–15 to ~60 fps, and reduced RAM from 1.3 GB to ~500 MB. Presented sprint demos to US stakeholders and leveraged AI agents in daily workflows.',
+    tags: ['React Native', 'Expo', 'Turborepo', 'Clean Architecture', 'AWS'],
   },
   {
-    date: '2020 — 2022',
-    company: 'StartupXYZ',
-    role: 'Mobile Developer',
-    desc: 'Developed and maintained React Native apps for iOS and Android. Implemented complex UI animations, push notifications, and deep linking. Reduced app crash rate by 40% through stability improvements and error tracking.',
-    tags: ['React Native', 'Expo', 'Firebase'],
+    date: 'June 2023 — June 2024',
+    company: 'GCT Solution',
+    role: 'Senior React Native Engineer',
+    desc: 'Designed and shipped new features across mobile apps for clients in England, Singapore and Australia. Led a mobile team of 4, conducted hiring interviews for foreign customer projects, and published apps to App Store and Google Play.',
+    tags: ['React Native', 'TypeScript', 'App Store', 'Play Store'],
   },
   {
-    date: '2019 — 2020',
-    company: 'Digital Agency',
-    role: 'Frontend Developer',
-    desc: 'Built responsive React web applications for clients across e-commerce and fintech. Delivered pixel-perfect implementations from Figma designs and integrated REST APIs.',
-    tags: ['React.js', 'CSS', 'REST APIs'],
+    date: 'July 2022 — June 2023',
+    company: 'Reti Proptech',
+    role: 'Middle React Native Engineer',
+    desc: 'Developed a real estate app from scratch in a start-up environment that raised $3M in funding from VicPartner and CyberAgent. Built offline-first architecture, animated UI, and collaborated directly with Product Owner and Sales to ship features.',
+    tags: ['React Native', 'GraphQL', 'Apollo Client', 'Redux'],
+  },
+  {
+    date: 'Sep 2018 — June 2022',
+    company: 'TMA Solutions',
+    role: 'Mobile Engineer',
+    desc: 'Built and maintained enterprise telecom calling services for Mitel — serving US, Indian and Japanese clients. Led an outsourcing team of 4, worked across Android Java, JavaScript and TypeScript, and shipped apps used by thousands of enterprise users.',
+    tags: ['Android Java', 'React Native', 'WebRTC', 'TypeScript'],
   },
 ]
 
@@ -89,28 +97,44 @@ export type Project = {
 
 export const projects: Project[] = [
   {
-    emoji: '📱',
-    name: 'FitTrack Mobile',
-    desc: 'A fitness tracking app built with React Native & Expo. Features workout logging, progress charts, and social features with 10k+ downloads on both stores.',
-    tags: ['React Native', 'Expo', 'TypeScript'],
+    emoji: '🏥',
+    name: 'Clinical Application',
+    desc: 'Healthcare platform for P&G, Pfizer & Sanofi — rebuilt from native iOS/Android/Vue into a unified Expo codebase. Achieved 50–60 fps from 1–15 fps and reduced RAM from 1.3 GB to ~500 MB.',
+    tags: ['React Native', 'Expo', 'Turborepo', 'AWS', 'Realm DB'],
   },
   {
-    emoji: '🛒',
-    name: 'ShopNext',
-    desc: 'Full-featured e-commerce platform built with Next.js App Router. Optimized for SEO and Core Web Vitals with SSR and edge caching.',
-    tags: ['Next.js', 'Tailwind', 'Stripe'],
+    emoji: '🔐',
+    name: 'Universal Portal SSO',
+    desc: 'Edge-native Clinical Portal SPA serving as an SSO gateway across healthcare tenants. Built 100% with AI-assisted coding (Claude Code) on React 19, Cloudflare Workers, and AWS Cognito.',
+    tags: ['React 19', 'TypeScript', 'Cloudflare', 'AWS Cognito', 'Vite'],
   },
   {
-    emoji: '🎨',
-    name: 'Design System',
-    desc: 'A shared component library used across mobile and web. Consistent design tokens, dark mode, accessibility built-in, and Storybook docs.',
-    tags: ['React', 'Storybook', 'Rollup'],
+    emoji: '🎾',
+    name: 'Viettennis',
+    desc: 'App for Vietnamese tennis players — tournament registration, player rankings, and match tracking. Published on App Store & Play Store with CI/CD via Xcode Cloud.',
+    tags: ['React Native', 'TypeScript', 'Redux Toolkit', 'Firebase'],
+    url: 'https://apps.apple.com/vn/app/viettennis/id6478106025',
   },
   {
-    emoji: '💬',
-    name: 'ChatFlow',
-    desc: 'Real-time messaging app in React Native. E2E encrypted messages, group chats, voice notes, and media sharing with a Firebase backend.',
-    tags: ['React Native', 'Firebase', 'Socket.io'],
+    emoji: '📞',
+    name: 'Mitel One',
+    desc: 'Enterprise communication app for calling, messaging and video. Led a React Native team of 4, integrated Amazon Chime video calling, and built automation tests with Appium.',
+    tags: ['React Native', 'Amazon Chime', 'Realm', 'Appium'],
+    url: 'https://apps.apple.com/vn/app/mitel-one/id1558922285',
+  },
+  {
+    emoji: '🏠',
+    name: 'Seland',
+    desc: 'Real estate app connecting sellers with buyers across Vietnam. Led the mobile team, implemented in-app purchases with VNPAY, and published to both App Store and Play Store.',
+    tags: ['React Native', 'TypeScript', 'Redux Toolkit', 'Firebase'],
+    url: 'https://apps.apple.com/vn/app/seland-vn/id6461381041',
+  },
+  {
+    emoji: '🏡',
+    name: 'Retizy',
+    desc: 'PropTech platform helping the app raise $3M in funding from VicPartner & CyberAgent. Built offline-first with GraphQL, animated UI, and published to App Store & Play Store.',
+    tags: ['React Native', 'GraphQL', 'Apollo', 'Redux'],
+    url: 'https://apps.apple.com/vn/app/retizy/id1593808769',
   },
 ]
 
@@ -122,7 +146,9 @@ export type Certification = {
 }
 
 export const certifications: Certification[] = [
-  { icon: '📜', name: 'Meta React Native Specialist', issuer: 'Meta · via Coursera', year: '2023' },
-  { icon: '⚡', name: 'Next.js & React — The Complete Guide', issuer: 'Udemy', year: '2022' },
-  { icon: '☁️', name: 'AWS Certified Cloud Practitioner', issuer: 'Amazon Web Services', year: '2023' },
+  { icon: '🤖', name: 'Claude Certified Architect — Foundations', issuer: 'Anthropic', year: '2026' },
+  { icon: '⚡', name: 'Claude Code in Action', issuer: 'Anthropic', year: '2026' },
+  { icon: '🔧', name: 'Building with the Claude API', issuer: 'Anthropic', year: '2026' },
+  { icon: '🏥', name: 'HIPAA Awareness for Business Associates', issuer: 'HIPAA Training', year: '2024' },
+  { icon: '🌐', name: 'English Proficiency Certificate: CEFR B2', issuer: 'Duolingo', year: '2025' },
 ]

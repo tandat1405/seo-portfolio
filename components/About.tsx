@@ -22,11 +22,11 @@ export default function About() {
               <div className={styles.cardTitle}>Background</div>
             </div>
             <p className={styles.cardP}>
-              I&apos;m a Mobile and Frontend Developer with 5+ years of experience, specializing in React Native and Next.js. I care deeply about building experiences that are fast, accessible, and visually polished.
+              Senior React Native Engineer with 8+ years building production-grade apps across healthcare, real estate, sports and telecom. I&apos;ve led cross-functional teams and shipped directly to App Store and Play Store for US, UK, Japanese and Australian clients.
             </p>
             <br />
             <p className={styles.cardP}>
-              I work with startups and companies to ship mobile and web products from design to production — bridging the gap between great design and great engineering.
+              Currently pioneering AI-assisted development workflows to accelerate architecture design, code review and feature delivery at scale.
             </p>
           </div>
           <div className={`${styles.photoStrip} fu`}>
