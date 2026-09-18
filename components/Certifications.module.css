@@ -8,6 +8,8 @@
   transition: all .22s;
 }
 .row:hover { border-color: var(--accent-light); transform: translateX(6px); }
+.rowLink { text-decoration: none; color: inherit; cursor: pointer; }
+.rowLink:hover .name { color: var(--accent); }
 .badge {
   width: 48px; height: 48px; border-radius: 12px;
   background: #eff6ff;

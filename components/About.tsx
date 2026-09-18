@@ -40,7 +40,7 @@ export default function About() {
             <div className={styles.overlay} />
             <div className={styles.photoLabel}>
               <div>
-                <div className={styles.aplContext}>Developer · Speaker</div>
+                <div className={styles.aplContext}>Mobile · Frontend</div>
                 <div className={styles.aplName}>{personal.name}</div>
                 <div className={styles.aplRole}>{personal.location}</div>
               </div>

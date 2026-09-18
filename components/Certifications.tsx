@@ -14,16 +14,33 @@ export default function Certifications() {
       <div className="label">Certifications</div>
       <h2>Credentials</h2>
       <div className={styles.list}>
-        {certifications.map((c) => (
-          <div key={c.name} className={`${styles.row} fu`}>
-            <div className={styles.badge}>{c.icon}</div>
-            <div className={styles.info}>
-              <div className={styles.name}>{c.name}</div>
-              <div className={styles.issuer}>{c.issuer}</div>
+        {certifications.map((c) => {
+          const inner = (
+            <>
+              <div className={styles.badge}>{c.icon}</div>
+              <div className={styles.info}>
+                <div className={styles.name}>{c.name}</div>
+                <div className={styles.issuer}>{c.issuer}</div>
+              </div>
+              <div className={styles.year}>{c.year}</div>
+            </>
+          )
+          return c.url ? (
+            <a
+              key={c.name}
+              href={c.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${styles.row} ${styles.rowLink} fu`}
+            >
+              {inner}
+            </a>
+          ) : (
+            <div key={c.name} className={`${styles.row} fu`}>
+              {inner}
             </div>
-            <div className={styles.year}>{c.year}</div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </section>
   )

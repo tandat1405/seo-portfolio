@@ -7,12 +7,11 @@ export const personal = {
   location: 'Ho Chi Minh City, Vietnam',
   email: 'tandat1405@gmail.com',
   linkedin: 'https://www.linkedin.com/in/tandat1405/',
-  github: 'https://github.com/tandat1405',
   availableForWork: true,
 }
 
 export const metrics = [
-  { icon: '📱', bg: '#eff6ff', label: 'Live Apps Shipped', value: '7+' },
+  { icon: '📱', bg: '#eff6ff', label: 'Live Apps & Webs Shipped', value: '9+' },
   { icon: '🌍', bg: '#f0fdf4', label: 'Countries Worked With', value: '5+' },
   { icon: '🏆', bg: '#fefce8', label: 'Years of Experience', value: '8+' },
   { icon: '👥', bg: '#fdf4ff', label: 'Teams Led', value: '3+' },
@@ -44,8 +43,9 @@ export const skillsWeb: Skill[] = [
 export const techTools = [
   'Turborepo', 'Clean Architecture', 'Redux Toolkit', 'Zustand',
   'React Query', 'Firebase', 'AWS / Cognito', 'GraphQL',
-  'GitHub Actions', 'Bitrise', 'Jest / Playwright', 'Datadog',
-  'SonarCloud', 'NativeWind',
+  'GitHub Actions', 'Bitrise', 'Jest', 'Appium',
+  'Playwright', 'Datadog', 'SonarCloud', 'NativeWind',
+  'ElectronJs', 'Android Java',
 ]
 
 export type Experience = {
@@ -92,15 +92,18 @@ export type Project = {
   name: string
   desc: string
   tags: string[]
-  url?: string
+  iosUrl?: string
+  androidUrl?: string
 }
 
 export const projects: Project[] = [
   {
     emoji: '🏥',
     name: 'Clinical Application',
-    desc: 'Healthcare platform for P&G, Pfizer & Sanofi — rebuilt from native iOS/Android/Vue into a unified Expo codebase. Achieved 50–60 fps from 1–15 fps and reduced RAM from 1.3 GB to ~500 MB.',
+    desc: '100+ white-label healthcare apps deployed to production for P&G, Pfizer & Sanofi. Rebuilt from native iOS/Android/Vue into a unified Expo codebase. Achieved ~60 fps from 1–15 fps and reduced RAM from 1.3 GB to ~500 MB.',
     tags: ['React Native', 'Expo', 'Turborepo', 'AWS', 'Realm DB'],
+    iosUrl: 'https://drive.google.com/file/d/1pf4s9doZrBVthMfohYgs4qGa4dZScw6R/view?usp=sharing',
+    androidUrl: 'https://drive.google.com/file/d/1pf4s9doZrBVthMfohYgs4qGa4dZScw6R/view?usp=sharing',
   },
   {
     emoji: '🔐',
@@ -113,28 +116,32 @@ export const projects: Project[] = [
     name: 'Viettennis',
     desc: 'App for Vietnamese tennis players — tournament registration, player rankings, and match tracking. Published on App Store & Play Store with CI/CD via Xcode Cloud.',
     tags: ['React Native', 'TypeScript', 'Redux Toolkit', 'Firebase'],
-    url: 'https://apps.apple.com/vn/app/viettennis/id6478106025',
+    iosUrl: 'https://apps.apple.com/vn/app/viettennis/id6478106025',
+    androidUrl: 'https://play.google.com/store/apps/details?id=com.viettennis',
   },
   {
     emoji: '📞',
     name: 'Mitel One',
     desc: 'Enterprise communication app for calling, messaging and video. Led a React Native team of 4, integrated Amazon Chime video calling, and built automation tests with Appium.',
     tags: ['React Native', 'Amazon Chime', 'Realm', 'Appium'],
-    url: 'https://apps.apple.com/vn/app/mitel-one/id1558922285',
+    iosUrl: 'https://apps.apple.com/vn/app/mitel-one/id1558922285',
+    androidUrl: 'https://play.google.com/store/apps/details?id=com.mitel.one.android',
   },
   {
     emoji: '🏠',
     name: 'Seland',
     desc: 'Real estate app connecting sellers with buyers across Vietnam. Led the mobile team, implemented in-app purchases with VNPAY, and published to both App Store and Play Store.',
     tags: ['React Native', 'TypeScript', 'Redux Toolkit', 'Firebase'],
-    url: 'https://apps.apple.com/vn/app/seland-vn/id6461381041',
+    iosUrl: 'https://apps.apple.com/vn/app/seland-vn/id6461381041',
+    androidUrl: 'https://play.google.com/store/apps/details?id=com.seland',
   },
   {
     emoji: '🏡',
     name: 'Retizy',
     desc: 'PropTech platform helping the app raise $3M in funding from VicPartner & CyberAgent. Built offline-first with GraphQL, animated UI, and published to App Store & Play Store.',
     tags: ['React Native', 'GraphQL', 'Apollo', 'Redux'],
-    url: 'https://apps.apple.com/vn/app/retizy/id1593808769',
+    iosUrl: 'https://apps.apple.com/vn/app/retizy/id1593808769',
+    androidUrl: 'https://play.google.com/store/apps/details?id=com.reti.agent.app',
   },
 ]
 
@@ -143,12 +150,42 @@ export type Certification = {
   name: string
   issuer: string
   year: string
+  url?: string
 }
 
 export const certifications: Certification[] = [
-  { icon: '🤖', name: 'Claude Certified Architect — Foundations', issuer: 'Anthropic', year: '2026' },
-  { icon: '⚡', name: 'Claude Code in Action', issuer: 'Anthropic', year: '2026' },
-  { icon: '🔧', name: 'Building with the Claude API', issuer: 'Anthropic', year: '2026' },
-  { icon: '🏥', name: 'HIPAA Awareness for Business Associates', issuer: 'HIPAA Training', year: '2024' },
-  { icon: '🌐', name: 'English Proficiency Certificate: CEFR B2', issuer: 'Duolingo', year: '2025' },
+  {
+    icon: '🤖',
+    name: 'Claude Certified Architect — Foundations',
+    issuer: 'Anthropic',
+    year: '2026',
+    url: 'https://www.credly.com/badges/f8439b35-8f01-4e7e-9109-d4fdc02705bc/public_url',
+  },
+  {
+    icon: '⚡',
+    name: 'Claude Code in Action',
+    issuer: 'Anthropic',
+    year: '2026',
+    url: 'https://verify.skilljar.com/c/xv59q3v7nqy9',
+  },
+  {
+    icon: '🔧',
+    name: 'Building with the Claude API',
+    issuer: 'Anthropic',
+    year: '2026',
+    url: 'https://verify.skilljar.com/c/whkpgwqq35sn',
+  },
+  {
+    icon: '🏥',
+    name: 'HIPAA Awareness for Business Associates',
+    issuer: 'HIPAATraining.com',
+    year: '2024',
+  },
+  {
+    icon: '🌐',
+    name: 'English Proficiency Certificate: CEFR B2',
+    issuer: 'Duolingo',
+    year: '2025',
+    url: 'https://certs.duolingo.com/y2d8i5buf6l5gm5u',
+  },
 ]

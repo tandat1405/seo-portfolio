@@ -15,23 +15,28 @@ export default function Projects() {
       <h2>Things I&apos;ve built</h2>
       <div className={styles.grid}>
         {projects.map((p) => (
-          <a
-            key={p.name}
-            href={p.url ?? '#'}
-            className={`${styles.card} fu`}
-            target={p.url ? '_blank' : undefined}
-            rel={p.url ? 'noopener noreferrer' : undefined}
-          >
+          <div key={p.name} className={`${styles.card} fu`}>
             <div className={styles.head}>
               <div className={styles.emoji}>{p.emoji}</div>
-              <div className={styles.arrow}>↗</div>
+              <div className={styles.storeLinks}>
+                {p.iosUrl && (
+                  <a href={p.iosUrl} target="_blank" rel="noopener noreferrer" className={styles.storeLink}>
+                    iOS ↗
+                  </a>
+                )}
+                {p.androidUrl && (
+                  <a href={p.androidUrl} target="_blank" rel="noopener noreferrer" className={styles.storeLink}>
+                    Android ↗
+                  </a>
+                )}
+              </div>
             </div>
             <div className={styles.name}>{p.name}</div>
             <div className={styles.about}>{p.desc}</div>
             <div className={styles.tags}>
               {p.tags.map((t) => <span key={t} className={styles.tag}>{t}</span>)}
             </div>
-          </a>
+          </div>
         ))}
       </div>
     </section>

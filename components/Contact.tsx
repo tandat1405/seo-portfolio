@@ -33,9 +33,6 @@ export default function Contact() {
             <a href={personal.linkedin} target="_blank" rel="noopener noreferrer" className={styles.soc}>
               <div className={styles.socIcon}>🔗</div> {personal.linkedin.replace('https://', '')}
             </a>
-            <a href={personal.github} target="_blank" rel="noopener noreferrer" className={styles.soc}>
-              <div className={styles.socIcon}>⌨️</div> {personal.github.replace('https://', '')}
-            </a>
             <a href={`mailto:${personal.email}`} className={styles.soc}>
               <div className={styles.socIcon}>✉️</div> {personal.email}
             </a>
