@@ -16,6 +16,8 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://datnguyen.dev'),
+  alternates: { canonical: '/' },
   title: 'Dat Nguyen — Mobile & Frontend Developer',
   description: 'Mobile and Frontend Developer specializing in React Native, Expo, React.js and Next.js. Based in Ho Chi Minh City, Vietnam. Available for remote work worldwide.',
   keywords: ['React Native', 'Expo', 'Next.js', 'React', 'TypeScript', 'Mobile Developer', 'Frontend Developer', 'Vietnam'],
