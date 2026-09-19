@@ -24,6 +24,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://datdev.vercel.app'),
   alternates: { canonical: '/' },
   icons: { icon: '/logo.png' },
+  verification: { google: 'kdxgXVuG7fpgHW3VKxHpGqYs1j9JXFmJmwjYEYjvLjo' },
   title: 'Nguyen Tan Dat — Senior React Native Engineer',
   description: '8 years of shipping apps people use every day — from healthcare platforms to real estate tools to tennis trackers. React Native at heart, full-stack when needed, and always experimenting with AI to build smarter and faster.',
   keywords: ['React Native', 'Expo', 'TypeScript', 'React.js', 'Next.js', 'Mobile Developer', 'Senior Engineer', 'Vietnam', 'Healthcare', 'Turborepo'],
