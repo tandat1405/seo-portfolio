@@ -23,8 +23,9 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL('https://datdev.vercel.app'),
   alternates: { canonical: '/' },
+  icons: { icon: '/logo.png' },
   title: 'Nguyen Tan Dat — Senior React Native Engineer',
-  description: 'Senior React Native Engineer with 8+ years building production apps across healthcare, real estate, sports and telecom. Based in Ho Chi Minh City, Vietnam.',
+  description: '8 years of shipping apps people use every day — from healthcare platforms to real estate tools to tennis trackers. React Native at heart, full-stack when needed, and always experimenting with AI to build smarter and faster.',
   keywords: ['React Native', 'Expo', 'TypeScript', 'React.js', 'Next.js', 'Mobile Developer', 'Senior Engineer', 'Vietnam', 'Healthcare', 'Turborepo'],
   authors: [{ name: 'Nguyen Tan Dat' }],
   creator: 'Nguyen Tan Dat',

@@ -1,5 +1,6 @@
 'use client'
 import { useRef } from 'react'
+import Image from 'next/image'
 import { projects } from '@/data/portfolio'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
 import styles from './Projects.module.css'
@@ -17,8 +18,19 @@ export default function Projects() {
         {projects.map((p) => (
           <div key={p.name} className={`${styles.card} fu`}>
             <div className={styles.head}>
-              <div className={styles.emoji}>{p.emoji}</div>
+              <div className={styles.icon}>
+                {p.image ? (
+                  <Image src={p.image} alt={p.name} width={44} height={44} className={styles.iconImg} />
+                ) : (
+                  <span className={styles.emoji}>{p.emoji}</span>
+                )}
+              </div>
               <div className={styles.storeLinks}>
+                {p.url && (
+                  <a href={p.url.href} target="_blank" rel="noopener noreferrer" className={styles.storeLink}>
+                    {p.url.label} ↗
+                  </a>
+                )}
                 {p.iosUrl && (
                   <a href={p.iosUrl} target="_blank" rel="noopener noreferrer" className={styles.storeLink}>
                     iOS ↗

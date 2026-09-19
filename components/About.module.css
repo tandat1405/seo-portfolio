@@ -35,7 +35,7 @@
 }
 .li::before { content: '→'; color: var(--accent); font-weight: 700; font-size: 13px; }
 
-.photoStrip { border-radius: 18px; overflow: hidden; position: relative; }
+.photoStrip { border-radius: 18px; overflow: hidden; position: relative; cursor: pointer; display: block; text-decoration: none; }
 .photo { width: 100%; aspect-ratio: 3/2; height: auto; object-fit: cover; object-position: center 30%; display: block; transition: transform .7s ease; }
 .photoStrip:hover .photo { transform: scale(1.04); }
 .overlay {

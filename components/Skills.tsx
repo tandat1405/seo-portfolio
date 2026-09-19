@@ -1,45 +1,50 @@
 'use client'
 import { useRef } from 'react'
-import { skillsMobile, skillsWeb, techTools } from '@/data/portfolio'
+import { skillsMobile, skillsWeb, skillsBackend, techTools, type Skill } from '@/data/portfolio'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
-import { useSkillBars } from '@/hooks/useSkillBars'
 import styles from './Skills.module.css'
+
+function levelLabel(pct: number) {
+  if (pct >= 90) return 'Expert'
+  if (pct >= 80) return 'Advanced'
+  return 'Proficient'
+}
+
+function SkillPills({ skills }: { skills: Skill[] }) {
+  return (
+    <div className={styles.cloud}>
+      {skills.map((s) => (
+        <div key={s.name} className={`${styles.skillPill} fu`}>
+          <span className={styles.skillPillName}>{s.name}</span>
+          <span className={styles.skillPillLevel}>{levelLabel(s.pct)}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export default function Skills() {
   const ref = useRef<HTMLElement>(null)
   useScrollReveal(ref)
-  useSkillBars(ref)
 
   return (
     <section id="skills" className={styles.section} ref={ref}>
       <div className="secNum">02</div>
       <div className="label">Skills</div>
-      <h2>What I know</h2>
+      <h2>My expertise</h2>
       <div className={styles.split}>
         <div>
           <div className={styles.group}>
             <div className={styles.groupTitle}>Mobile Development</div>
-            {skillsMobile.map((s) => (
-              <div key={s.name} className={`${styles.skItem} fu`}>
-                <div className={styles.skName}>{s.name}</div>
-                <div className={styles.skBar}>
-                  <div className={styles.skFill} data-w={s.pct} />
-                </div>
-                <div className={styles.skPct}>{s.pct}%</div>
-              </div>
-            ))}
+            <SkillPills skills={skillsMobile} />
           </div>
           <div className={styles.group}>
             <div className={styles.groupTitle}>Frontend Web</div>
-            {skillsWeb.map((s) => (
-              <div key={s.name} className={`${styles.skItem} fu`}>
-                <div className={styles.skName}>{s.name}</div>
-                <div className={styles.skBar}>
-                  <div className={styles.skFill} data-w={s.pct} />
-                </div>
-                <div className={styles.skPct}>{s.pct}%</div>
-              </div>
-            ))}
+            <SkillPills skills={skillsWeb} />
+          </div>
+          <div className={styles.group}>
+            <div className={styles.groupTitle}>Backend</div>
+            <SkillPills skills={skillsBackend} />
           </div>
         </div>
         <div>

@@ -1,5 +1,6 @@
 'use client'
 import { useRef } from 'react'
+import Image from 'next/image'
 import { certifications } from '@/data/portfolio'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
 import styles from './Certifications.module.css'
@@ -17,7 +18,13 @@ export default function Certifications() {
         {certifications.map((c) => {
           const inner = (
             <>
-              <div className={styles.badge}>{c.icon}</div>
+              <div className={styles.badge}>
+                {c.image ? (
+                  <Image src={c.image} alt={c.issuer} width={36} height={36} className={styles.badgeImg} />
+                ) : (
+                  c.icon
+                )}
+              </div>
               <div className={styles.info}>
                 <div className={styles.name}>{c.name}</div>
                 <div className={styles.issuer}>{c.issuer}</div>
