@@ -1,5 +1,6 @@
 export const personal = {
   name: "Nguyen Tan Dat",
+  greeting: "Hi, I'm Dat Nguyen",
   title: "Senior React Native Engineer",
   tagline: "Senior React Native <em>Engineer.</em>",
   sub: "React Native · Expo · TypeScript · React.js",

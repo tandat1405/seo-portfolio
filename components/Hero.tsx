@@ -10,6 +10,7 @@ export default function Hero() {
             <span className={styles.dot} />
             Available for work
           </div>
+          <div className={styles.greeting}>{personal.greeting}</div>
           <h1
             className={styles.h1}
             dangerouslySetInnerHTML={{ __html: personal.tagline }}
