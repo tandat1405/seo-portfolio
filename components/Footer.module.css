@@ -8,4 +8,11 @@
 }
 .footer a { color: var(--accent); text-decoration: none; }
 
+.gameLink {
+  font-weight: 600;
+  font-size: 13px;
+  transition: opacity 0.2s;
+}
+.gameLink:hover { opacity: 0.72; }
+
 @media (max-width: 960px) { .footer { padding: 20px 24px; } }

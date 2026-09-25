@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { label: "Experience", href: "#experience" },
   { label: "Projects", href: "#projects" },
   { label: "Certs", href: "#certifications" },
+  { label: "Games", href: "#games" },
   { label: "Contact", href: "#contact" }
 ];
 
@@ -20,6 +21,7 @@ const SECTION_IDS = [
   "experience",
   "projects",
   "certifications",
+  "games",
   "contact"
 ];
 

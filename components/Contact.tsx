@@ -21,7 +21,7 @@ export default function Contact() {
 
   return (
     <section id="contact" className={styles.section} ref={ref}>
-      <div className="secNum">06</div>
+      <div className="secNum">07</div>
       <div className="label">Contact</div>
       <h2>Let&apos;s build something</h2>
       <div className={styles.split}>

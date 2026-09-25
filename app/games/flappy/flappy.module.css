@@ -1,0 +1,42 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36px 24px;
+  gap: 20px;
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: min(380px, calc(100vw - 48px));
+}
+
+.back {
+  color: var(--text-3);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.back:hover { color: var(--accent); }
+
+.scores {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.canvas {
+  display: block;
+  width: min(380px, calc(100vw - 48px));
+  height: auto;
+  border-radius: 16px;
+  cursor: pointer;
+  touch-action: none;
+  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.12);
+  border: 1px solid var(--border);
+}
