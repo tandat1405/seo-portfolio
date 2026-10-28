@@ -1,0 +1,123 @@
+---
+title: "React Native New Architecture: Beyond the JS Bridge"
+date: "2026-10-28"
+description: "An in-depth look at how JSI and Fabric eliminate async serialization bottlenecks to deliver true 60fps native performance."
+tags: ["react-native","architecture","performance"]
+image: "/blog/images/2026-10-28-react-native-new-architecture-beyond-the-js-bridge.jpg"
+---
+
+For years, React Native developers pushing the boundaries of performance hit a firm ceiling: the legacy Bridge. Whenever an application required 120Hz gesture tracking, real-time audio processing, or synchronized layout measuring during rapid scrolling, frame drops were almost inevitable. The culprit was not JavaScript’s execution speed, but the architectural bottleneck of serializing asynchronous JSON payloads across the JavaScript-to-Native boundary. The New Architecture completely dismantles this paradigm. By replacing the Bridge with the JavaScript Interface (JSI) and introducing Fabric as a C++ unified rendering engine, React Native moves from asynchronous string passing to direct, synchronous memory reference manipulation.
+
+## The Legacy Architecture: JSON Over a Queue
+
+To understand why the New Architecture is transformative, we must first isolate the core failure mode of the legacy Bridge.
+
+In the old architecture, the JS thread and Native (UI) thread operated as completely isolated environments. They communicated exclusively by passing asynchronous JSON messages over a single C++ message queue.
+
+```
+[JS Thread] -> JSON.stringify() -> [Bridge Queue] -> JSON.parse() -> [UI Thread]
+```
+
+This model suffered from three primary constraints:
+1. **Serialization Overhead:** Every property update, touch event, and layout pass had to be serialized to a JSON string on one thread and parsed on the other.
+2. **Strict Asynchrony:** JS could never synchronously measure a native UI view's dimensions during layout calculation. Inter-thread messages were scheduled on event loops, leading to visual jumping ("glitches") during complex UI transitions.
+3. **Queue Congestion:** High-frequency events (e.g., `onScroll` or `PanResponder` updates) flooded the single Bridge queue, starving lower-priority events and blocking UI updates.
+
+## JavaScript Interface (JSI): Deleting the Serialization Layer
+
+The JavaScript Interface (JSI) is a lightweight, engine-agnostic C++ abstraction layer that replaces the Bridge. Instead of relying on a queue to pass text, JSI allows the JavaScript engine (such as Hermes or V8) to hold direct C++ pointers to native memory objects, and vice versa.
+
+Through JSI, native methods are exposed to JavaScript as **Host Objects**. When JavaScript invokes a Host Object method, it executes a C++ function directly on the current thread—with zero JSON serialization and zero dynamic memory allocations for string passing.
+
+### Synchronous Native Execution
+
+Consider how a low-latency native call is exposed using JSI in C++:
+
+```cpp
+#include <jsi/jsi.h>
+
+using namespace facebook;
+
+void registerNativePerformanceTimer(jsi::Runtime& runtime) {
+  auto timerFunc = jsi::Function::createFromHostFunction(
+    runtime,
+    jsi::PropNameID::forAscii(runtime, "getHighResTimestamp"),
+    0, // Argument count
+    [](jsi::Runtime& rt, const jsi::Value& thisVal, const jsi::Value* args, size_t count) -> jsi::Value {
+      double timestamp = getMonotonicSystemTimeUs();
+      return jsi::Value(timestamp); // Directly returns scalar to JS execution context
+    }
+  );
+
+  runtime.global().setProperty(runtime, "getHighResTimestamp", std::move(timerFunc));
+}
+```
+
+Because `getHighResTimestamp` is bound directly into the `jsi::Runtime` global object, JavaScript calls it synchronously in microsecond scale:
+
+```typescript
+// Executed directly on the JS thread without touching a bridge queue
+const start = global.getHighResTimestamp();
+```
+
+## Fabric: Concurrent Rendering Meets Native UI
+
+Where JSI changes native module invocations, **Fabric** changes the entire rendering pipeline. Fabric is React Native's C++ native rendering engine, designed to bring React 18's concurrent features (`useTransition`, `Suspense`, priority lanes) natively to mobile platforms.
+
+### The Three-Tree Render Pipeline
+
+Fabric shifts render tree management into C++, creating a unified reconciliation flow across platforms:
+
+```
+[React JS Component Tree]
+         │
+         ▼
+[C++ React Shadow Tree]  <-- Mutated via C++, Layout calculated via Yoga Engine
+         │
+         ▼
+[Platform Host Views]    <-- iOS UIView / Android android.view.View
+```
+
+1. **React Element Tree:** Generated in JavaScript by React reconciler logic.
+2. **C++ Shadow Tree:** Fabric builds an immutable shadow tree composed of C++ `ShadowNode` objects. Layout calculations (via the Yoga flexbox engine) happen entirely in C++.
+3. **Host View Tree:** C++ mutations generate minimal imperative operations dispatched to actual platform views (`UIView` / `android.view.View`).
+
+### Eliminating Layout Glitches via Synchronous Measure
+
+Because the C++ Shadow Tree exists outside the constraints of asynchronous queues, Fabric enables **synchronous native layout measurement**.
+
+```typescript
+// Fabric Native Component Spec (Codegen TypeScript)
+import type { HostComponent, ViewProps } from 'react-native';
+import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+
+export interface NativeCanvasProps extends ViewProps {
+  strokeWidth?: number;
+}
+
+export default codegenNativeComponent<NativeCanvasProps>(
+  'NativeCanvasView'
+) as HostComponent<NativeCanvasProps>;
+```
+
+During execution, if a component requires immediate dimension resolution before committing a frame (e.g., auto-resizing input fields or bottom-sheet snap points), Fabric can pause JS execution, trigger Yoga in C++, calculate native layout specs, and commit the platform view mutation within the same frame boundary.
+
+## TurboModules: Lazy-Loaded Native Functionality
+
+In the legacy architecture, all native modules (Camera, Location, Storage) were eagerly initialized on app startup, forcing the main thread to allocate memory for every module regardless of whether the user needed it.
+
+**TurboModules** leverage JSI to lazy-load native bindings. On app launch, only C++ JSI object specifications are registered with the runtime. The underlying native implementation is initialized if—and only when—JavaScript explicitly invokes the module for the first time.
+
+```
+Legacy App Launch:   [Init JS] -> [Init Module A] -> [Init Module B] -> [Render Screen]
+TurboModule Launch: [Init JS] -> [Render Screen] (Module A loaded on-demand via JSI)
+```
+
+## Practical Takeaways for Senior Engineers
+
+Moving your production codebase to the New Architecture is not merely an upgrade; it changes how you architect performance-critical systems:
+
+1. **Stop Batching for Performance:** You no longer need hacky workarounds (like `InteractionManager.runAfterInteractions` or custom native event throttling) just to prevent queue jamming.
+2. **Leverage Shared C++ Code:** Write core business logic, encryption algorithms, or state management engines once in C++ and expose them to both iOS and Android via JSI with zero bridge latency.
+3. **Adopt Concurrent React Principles:** Fabric unlocks true priority lane rendering. Wrap heavy native list updates or navigation transitions in React 18’s `startTransition` to keep user inputs running at native 120 FPS.
+4. **Mandate Codegen:** Fabric components and TurboModules rely on type-safe C++ bindings generated directly from TypeScript specs via React Native Codegen. Strict typing is now an architectural requirement, not just a preference.
