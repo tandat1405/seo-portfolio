@@ -12,11 +12,6 @@ const TEXT_MODELS = [
   "gemini-2.5-flash",
   "gemini-3.8-flash"
 ];
-const IMAGE_MODELS = [
-  "gemini-3.1-flash-image",
-  "gemini-2.5-flash-image",
-  "gemini-3.1-flash-lite-image"
-];
 
 const TOPIC_POOL = [
   "React Native fundamentals",
@@ -149,25 +144,34 @@ Requirements:
   return result.text.trim();
 }
 
-async function generateImage(ai, topic, angle) {
-  const prompt = `Create a clean, professional tech blog cover image for an article titled "${topic}".
-${angle}
-Style: modern, minimal, dark background with blue accents, abstract geometric shapes representing code/architecture.
-No text, no logos. 1200x630 aspect ratio composition.`;
+async function fetchStockImage(topic, tags) {
+  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+  if (!accessKey) throw new Error("UNSPLASH_ACCESS_KEY is required");
 
-  const result = await callWithFallback(IMAGE_MODELS, (model) =>
-    ai.models.generateContent({ model, contents: prompt })
-  );
+  const queries = [
+    [topic, ...tags].slice(0, 4).join(" "),
+    tags.slice(0, 2).join(" "),
+    "programming code technology",
+  ];
 
-  const imagePart = result.candidates?.[0]?.content?.parts?.find((p) =>
-    p.inlineData?.mimeType?.startsWith("image/")
-  );
+  for (const query of queries) {
+    const searchRes = await fetch(
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=5&orientation=landscape&content_filter=high`,
+      { headers: { Authorization: `Client-ID ${accessKey}` } }
+    );
+    if (!searchRes.ok) throw new Error(`Unsplash search failed: ${searchRes.status}`);
+    const data = await searchRes.json();
+    const photo = data.results?.[0];
+    if (!photo) continue;
 
-  if (!imagePart?.inlineData?.data) {
-    throw new Error("No image data returned from Gemini image model");
+    console.log(`Unsplash photo: ${photo.urls.regular} (query: "${query}")`);
+    const imgRes = await fetch(photo.urls.regular);
+    if (!imgRes.ok) throw new Error(`Unsplash download failed: ${imgRes.status}`);
+    const arrayBuffer = await imgRes.arrayBuffer();
+    return Buffer.from(arrayBuffer);
   }
 
-  return Buffer.from(imagePart.inlineData.data, "base64");
+  throw new Error(`No Unsplash photo found for topic: ${topic}`);
 }
 
 async function openPR(
@@ -223,7 +227,7 @@ async function openPR(
         sha: mdxBlob.sha
       },
       {
-        path: `public/blog/images/${date}-${slug}.png`,
+        path: `public/blog/images/${date}-${slug}.jpg`,
         mode: "100644",
         type: "blob",
         sha: imgBlob.sha
@@ -265,6 +269,7 @@ async function main() {
   const repo = process.env.REPO_NAME;
 
   if (!apiKey) throw new Error("GEMINI_API_KEY is required");
+  if (!process.env.UNSPLASH_ACCESS_KEY) throw new Error("UNSPLASH_ACCESS_KEY is required");
   if (!githubToken || !owner || !repo)
     throw new Error("GITHUB_TOKEN, REPO_OWNER, REPO_NAME are required");
 
@@ -299,8 +304,8 @@ async function main() {
   console.log("Generating content...");
   const content = await generateContent(ai, topicData.topic, topicData.angle);
 
-  console.log("Generating image...");
-  const imageBuffer = await generateImage(ai, topicData.topic, topicData.angle);
+  console.log("Fetching stock image...");
+  const imageBuffer = await fetchStockImage(topicData.topic, topicData.tags);
 
   const date = new Date().toISOString().slice(0, 10);
   const slug = slugify(topicData.topic);
@@ -311,7 +316,7 @@ title: "${topicData.topic.replace(/"/g, '\\"')}"
 date: "${date}"
 description: "${topicData.angle.replace(/"/g, '\\"')}"
 tags: ${JSON.stringify(topicData.tags)}
-image: "/blog/images/${date}-${slug}.png"
+image: "/blog/images/${date}-${slug}.jpg"
 ---
 
 `;
@@ -320,7 +325,7 @@ image: "/blog/images/${date}-${slug}.png"
   fs.mkdirSync(IMAGES_DIR, { recursive: true });
 
   const mdxPath = path.join(BLOG_DIR, `${date}-${slug}.mdx`);
-  const imgPath = path.join(IMAGES_DIR, `${date}-${slug}.png`);
+  const imgPath = path.join(IMAGES_DIR, `${date}-${slug}.jpg`);
 
   fs.writeFileSync(mdxPath, mdxFrontmatter + content, "utf-8");
   fs.writeFileSync(imgPath, imageBuffer);
