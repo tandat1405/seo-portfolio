@@ -66,8 +66,18 @@ Return a JSON object ONLY (no markdown, no explanation):
     contents: prompt,
   })
 
-  const text = result.text.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '')
-  return JSON.parse(text)
+  if (!result.text) {
+    throw new Error('Gemini returned no text for topic generation (possible safety block)')
+  }
+
+  let parsed
+  try {
+    const text = result.text.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '')
+    parsed = JSON.parse(text)
+  } catch {
+    throw new Error(`Gemini returned non-JSON for topic generation:\n${result.text}`)
+  }
+  return parsed
 }
 
 async function generateContent(ai, topic, angle) {
@@ -213,12 +223,15 @@ async function main() {
   console.log('Generating topic...')
   let topicData = await generateTopic(ai, existingTopics)
 
-  const isDuplicate = existingTopics.some(
-    (t) => t.title.toLowerCase() === topicData.topic.toLowerCase()
-  )
-  if (isDuplicate) {
+  const isDuplicate = (data) =>
+    existingTopics.some((t) => t.title.toLowerCase() === data.topic.toLowerCase())
+
+  if (isDuplicate(topicData)) {
     console.log('Topic was duplicate, retrying...')
     topicData = await generateTopic(ai, existingTopics, true)
+    if (isDuplicate(topicData)) {
+      throw new Error(`Gemini returned a duplicate topic after retry: "${topicData.topic}"`)
+    }
   }
 
   console.log(`Topic: ${topicData.topic}`)
