@@ -1,0 +1,158 @@
+---
+title: "Custom Hooks as Finite State Machines in React"
+date: "2026-10-28"
+description: "Replace tangled useEffect chains with deterministic state-machine-driven custom hooks for robust UI logic."
+tags: ["react","hooks","architecture"]
+image: "/blog/images/2026-10-28-custom-hooks-as-finite-state-machines-in-react.jpg"
+---
+
+We have all reviewed the pull request: a custom hook managing an asynchronous workflow, decorated with four distinct `useState` calls and a tangled web of interdependent `useEffect` hooks. On the surface, it works. But under poor network conditions, unexpected user interactions, or rapid unmount/remount cycles, the hook degrades into race conditions and impossible UI states—like `isLoading: true` while simultaneously displaying an `error` object and stale data. 
+
+As applications scale across React and React Native, relying on implicit state synchronization derived from cascading side effects becomes a primary source of tech debt. To build resilient UI logic, we must shift from imperative effect synchronization to deterministic state machines wrapped in custom hooks.
+
+## The Fallacy of Implicit UI State
+
+When building complex interfaces—such as file uploaders, multi-step checkout flows, or media streaming controls—engineers often model state using multiple boolean flags:
+
+```typescript
+// Anti-pattern: 4 booleans = 16 possible state permutations
+const [isLoading, setIsLoading] = useState(false);
+const [isError, setIsError] = useState(false);
+const [isSuccess, setIsSuccess] = useState(false);
+const [isPaused, setIsPaused] = useState(false);
+```
+
+With 4 boolean flags, your component theoretically supports $2^4 = 16$ states. However, only 5 of those states are valid. What happens when `isLoading` and `isPaused` are both `true`? What if an asynchronous response resolves after the component transitions to `isPaused`? 
+
+Chaining `useEffect` hooks to synchronize these flags attempts to fix state mismatches at runtime. This turns your custom hook into a non-deterministic reactive mesh where tracing causality requires step-through debugging across render cycles.
+
+## Formalizing States with Discriminated Unions and `useReducer`
+
+A Finite State Machine (FSM) explicitly defines:
+1. A finite set of **States**.
+2. A finite set of **Events**.
+3. A **Transition Function** that maps `(Current State, Event) -> Next State`.
+
+In React, you don't always need a heavy external library like XState for local UI logic. TypeScript discriminated unions paired with `useReducer` offer a lightweight, zero-dependency mechanism to construct strict, type-safe state machines.
+
+### Defining State and Event Types
+
+By leveraging discriminated unions, we make impossible states unrepresentable at compile time:
+
+```typescript
+type MachineState =
+  | { status: 'idle' }
+  | { status: 'uploading'; progress: number; controller: AbortController }
+  | { status: 'paused'; progress: number }
+  | { status: 'success'; fileUrl: string }
+  | { status: 'error'; error: Error };
+
+type MachineEvent =
+  | { type: 'START_UPLOAD'; controller: AbortController }
+  | { type: 'TICK_PROGRESS'; progress: number }
+  | { type: 'PAUSE' }
+  | { type: 'RESUME'; controller: AbortController }
+  | { type: 'SUCCESS'; fileUrl: string }
+  | { type: 'FAIL'; error: Error }
+  | { type: 'RESET' };
+```
+
+## Building the Deterministic Hook
+
+The core requirement of an FSM reducer is that it **must ignore events that are invalid for the current state**. If a network request resolves with `SUCCESS` while the system is in the `idle` or `paused` state, the transition is a no-op.
+
+```typescript
+function uploaderReducer(state: MachineState, event: MachineEvent): MachineState {
+  switch (state.status) {
+    case 'idle':
+      if (event.type === 'START_UPLOAD') {
+        return { status: 'uploading', progress: 0, controller: event.controller };
+      }
+      return state;
+
+    case 'uploading':
+      switch (event.type) {
+        case 'TICK_PROGRESS':
+          return { ...state, progress: event.progress };
+        case 'PAUSE':
+          state.controller.abort();
+          return { status: 'paused', progress: state.progress };
+        case 'SUCCESS':
+          return { status: 'success', fileUrl: event.fileUrl };
+        case 'FAIL':
+          return { status: 'error', error: event.error };
+        default:
+          return state;
+      }
+
+    case 'paused':
+      if (event.type === 'RESUME') {
+        return { status: 'uploading', progress: state.progress, controller: event.controller };
+      }
+      return state;
+
+    case 'error':
+    case 'success':
+      if (event.type === 'RESET') {
+        return { status: 'idle' };
+      }
+      return state;
+
+    default:
+      return state;
+  }
+}
+```
+
+## Managing Side Effects Safely
+
+Reducers must remain pure functions. Side effects (such as network calls or Native Modules in React Native) should be initiated by dispatching actions or synchronized explicitly with the state machine's deterministic status.
+
+Here is how we expose a clean interface to consumer components using our custom hook:
+
+```typescript
+export function useFileUploader() {
+  const [state, dispatch] = useReducer(uploaderReducer, { status: 'idle' });
+
+  const startUpload = useCallback(async (file: File) => {
+    if (state.status !== 'idle' && state.status !== 'error') return;
+
+    const controller = new AbortController();
+    dispatch({ type: 'START_UPLOAD', controller });
+
+    try {
+      const fileUrl = await mockUploadApi(file, controller.signal, (progress) => {
+        dispatch({ type: 'TICK_PROGRESS', progress });
+      });
+      dispatch({ type: 'SUCCESS', fileUrl });
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        dispatch({ type: 'FAIL', error: err as Error });
+      }
+    }
+  }, [state.status]);
+
+  const pause = useCallback(() => {
+    dispatch({ type: 'PAUSE' });
+  }, []);
+
+  const reset = useCallback(() => {
+    dispatch({ type: 'RESET' });
+  }, []);
+
+  return { state, startUpload, pause, reset };
+}
+```
+
+Notice how `startUpload` checks `state.status` before initiating an execution path. Race conditions are eliminated because action dispatches during invalid states are strictly ignored by the reducer transition table.
+
+## Architectural Takeaways
+
+Moving complex hook logic to explicit finite state machines provides tangible benefits for senior engineers maintaining large-scale React and React Native codebases:
+
+1. **Zero Impossible States:** Discriminated unions guarantee that data properties (like `progress` or `error`) only exist when the state explicitly allows them.
+2. **Deterministic Debugging:** Logging `state.status` and dispatched `event.type` yields a clear, reproducible linear audit log of application behavior.
+3. **Decoupled Effect Logic:** Side effects react to explicit state transitions rather than ambient prop changes, cutting down on unexpected `useEffect` trigger loops.
+4. **Simplified Testing:** The reducer pure function can be thoroughly unit tested against edge cases without mounting a single React component or mocking render trees.
+
+When building your next non-trivial custom hook, avoid adding another boolean or `useEffect`. Define your states, map your transition table, and let deterministic state machines do the heavy lifting.
