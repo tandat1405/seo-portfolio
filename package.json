@@ -17,6 +17,8 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@google/genai": "^2.31.0",
+    "@octokit/rest": "^22.0.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
