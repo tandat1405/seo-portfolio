@@ -1,0 +1,129 @@
+.page {
+  padding: 80px 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.back {
+  display: inline-block;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-bottom: 40px;
+  transition: opacity 0.2s;
+}
+.back:hover { opacity: 0.7; }
+
+.heading {
+  font-size: clamp(26px, 4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 48px;
+  line-height: 1.15;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.card {
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.25s;
+  overflow: hidden;
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #eff6ff 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.card:hover {
+  border-color: var(--accent-light);
+  transform: translateY(-5px);
+  box-shadow: 0 20px 50px rgba(37, 99, 235, 0.1);
+}
+.card:hover::before { opacity: 1; }
+
+.cardImage {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-2);
+}
+
+.cardBody {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.cardTitle {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.cardDesc {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.55;
+  flex: 1;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.cardDate {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(37, 99, 235, 0.08);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+
+@media (max-width: 960px) {
+  .page { padding: 80px 24px 60px; }
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .page { padding: 72px 16px 48px; }
+  .grid { grid-template-columns: 1fr; }
+}
