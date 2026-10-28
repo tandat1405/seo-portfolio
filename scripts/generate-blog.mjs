@@ -7,6 +7,9 @@ import { Octokit } from '@octokit/rest'
 const BLOG_DIR = path.join(process.cwd(), 'content', 'blog')
 const IMAGES_DIR = path.join(process.cwd(), 'public', 'blog', 'images')
 
+const TEXT_MODELS = ['gemini-3.6-flash', 'gemini-2.0-flash', 'gemini-1.5-flash']
+const IMAGE_MODELS = ['gemini-3.1-flash-image', 'gemini-3.1-flash-lite-image']
+
 const TOPIC_POOL = [
   'React Native fundamentals',
   'React fundamentals',
@@ -20,6 +23,31 @@ const TOPIC_POOL = [
   'React Native performance deep-dives',
   'React hooks patterns',
 ]
+
+async function callWithFallback(models, fn, retriesPerModel = 2) {
+  for (const model of models) {
+    for (let attempt = 0; attempt < retriesPerModel; attempt++) {
+      try {
+        return await fn(model)
+      } catch (err) {
+        const isUnavailable =
+          err?.status === 503 ||
+          err?.message?.includes('503') ||
+          err?.message?.includes('UNAVAILABLE') ||
+          err?.message?.includes('high demand')
+        if (!isUnavailable) throw err
+        if (attempt < retriesPerModel - 1) {
+          const delay = Math.pow(2, attempt + 1) * 1000
+          console.log(`Model ${model} unavailable, retrying in ${delay / 1000}s...`)
+          await new Promise((r) => setTimeout(r, delay))
+        } else {
+          console.log(`Model ${model} exhausted retries, trying next fallback...`)
+        }
+      }
+    }
+  }
+  throw new Error(`All models exhausted: ${models.join(', ')}`)
+}
 
 function getExistingTopics() {
   if (!fs.existsSync(BLOG_DIR)) return []
@@ -61,10 +89,9 @@ Return a JSON object ONLY (no markdown, no explanation):
   "tags": ["tag1", "tag2", "tag3"]
 }`
 
-  const result = await ai.models.generateContent({
-    model: 'gemini-3.6-flash',
-    contents: prompt,
-  })
+  const result = await callWithFallback(TEXT_MODELS, (model) =>
+    ai.models.generateContent({ model, contents: prompt })
+  )
 
   if (!result.text) {
     throw new Error('Gemini returned no text for topic generation (possible safety block)')
@@ -96,10 +123,9 @@ Requirements:
 - End with a practical takeaway or conclusion
 - Technical depth appropriate for senior engineers`
 
-  const result = await ai.models.generateContent({
-    model: 'gemini-3.6-flash',
-    contents: prompt,
-  })
+  const result = await callWithFallback(TEXT_MODELS, (model) =>
+    ai.models.generateContent({ model, contents: prompt })
+  )
 
   return result.text.trim()
 }
@@ -110,10 +136,9 @@ ${angle}
 Style: modern, minimal, dark background with blue accents, abstract geometric shapes representing code/architecture.
 No text, no logos. 1200x630 aspect ratio composition.`
 
-  const result = await ai.models.generateContent({
-    model: 'gemini-3.1-flash-image',
-    contents: prompt,
-  })
+  const result = await callWithFallback(IMAGE_MODELS, (model) =>
+    ai.models.generateContent({ model, contents: prompt })
+  )
 
   const imagePart = result.candidates?.[0]?.content?.parts?.find(
     (p) => p.inlineData?.mimeType?.startsWith('image/')
