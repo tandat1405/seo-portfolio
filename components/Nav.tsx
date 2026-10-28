@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { label: "Projects", href: "#projects" },
   { label: "Certs", href: "#certifications" },
   { label: "Games", href: "#games" },
+  { label: "Blog", href: "#blog" },
   { label: "Contact", href: "#contact" }
 ];
 
@@ -22,6 +23,7 @@ const SECTION_IDS = [
   "projects",
   "certifications",
   "games",
+  "blog",
   "contact"
 ];
 
