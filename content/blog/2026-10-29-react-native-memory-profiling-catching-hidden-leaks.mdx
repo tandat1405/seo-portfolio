@@ -1,0 +1,194 @@
+---
+title: "React Native Memory Profiling: Catching Hidden Leaks"
+date: "2026-10-29"
+description: "A practical guide to diagnosing and fixing subtle JS-to-native memory leaks using Hermes profilers and Xcode Instruments."
+tags: ["react-native","performance","debugging"]
+image: "/blog/images/2026-10-29-react-native-memory-profiling-catching-hidden-leaks.jpg"
+---
+
+React Native applications often present memory issues that escape standard JavaScript-level tooling. While your JS heap might appear stable in React DevTools, your app's native memory footprint can quietly creep upward until iOS issues a Low Memory Warning and abruptly terminates the process. These invisible leaks typically cluster at the boundary between the JavaScript runtime and native runtimes—where Hermes GC, C++ JSI objects, and Objective-C/Swift ARC attempt to manage object lifecycles across an asynchronous bridge.
+
+Diagnosing these cross-boundary leaks requires an integrated approach. You must trace retained references from the Hermes JavaScript engine down to native memory allocations in Xcode Instruments.
+
+## The JS-to-Native Boundary Problem
+
+In the New Architecture, the JavaScript Interface (JSI) enables C++ host objects to be directly exposed to JavaScript without serialization. While this eliminated bridge bottlenecking, it introduced a dual-runtime lifecycle challenge:
+
+1. **Hermes GC** manages JavaScript values and `jsi::Pointer` wrappers.
+2. **ARC / Native Allocators** manage Objective-C/Swift views, view controllers, and backing buffers (e.g., `CGImage`, `metal` textures, `NSData`).
+
+A leak occurs when a native object maintains a strong reference to a `jsi::Value` or `jsi::Function` while JavaScript simultaneously retains a native host object. Because the Hermes Garbage Collector cannot inspect native reference graphs (and ARC knows nothing about the Hermes heap), neither allocator can reclaim the memory.
+
+```
++-------------------+             +-----------------------+
+|   Hermes Engine   |             |   Native (iOS / C++)  |
+|                   |             |                       |
+|  [ React Hook ]   |             |                       |
+|        |          |             |                       |
+|   (Strong Ref)    |             |                       |
+|        v          |             |                       |
+|  [ HostObject ]   |== (JSI) ==> |  [ Native Observer ]  |
+|                   |             |           |           |
+|  [ JS Callback ]  |<== (JSI) == |     (Strong Ref)      |
++-------------------+             +-----------------------+
+```
+
+## Step 1: Profiling the Hermes Heap
+
+When diagnosing memory anomalies, start by isolating the JavaScript heap to verify whether the leaks originate in pure JS space or host bindings.
+
+### Generating Heap Snapshots
+
+You can capture Hermes heap snapshots directly through Metro or using the Chrome DevTools protocol via the experimental debugger endpoint:
+
+```bash
+# Capture heap snapshot via Hermes CLI directly on a developer build
+npx react-native profile-hermes
+```
+
+In Chrome DevTools (`chrome://inspect`), select the Hermes target and navigate to the **Memory** tab.
+
+### Analyzing Host Objects
+
+Filter the snapshot for `HostObject` or `NativeModules`. Look for instances where:
+- Retained size significantly exceeds shallow size.
+- Object counts scale linearly with user navigation cycles (e.g., push/pop screens).
+- Closures hold scope references to unmounted `FiberNode` trees.
+
+If the JS heap size remains flat after triggering explicit garbage collection (`gc()` in the Hermes console), but your Xcode debug navigator shows native memory climbing, the leak exists on the native side of the JSI boundary.
+
+## Step 2: Native Diagnostics with Xcode Instruments
+
+To trace the native side of the allocation, launch Xcode and open **Instruments** (`Cmd + I` on your workspace).
+
+Select the **Allocations** and **Leaks** template.
+
+### Configuring Allocation Filters
+
+To pinpoint bridge leaks, set up target filters inside Instruments:
+1. Set **Recorded Types** to filter by symbols under `facebook::react`, `jsi::`, or your custom native module prefixes.
+2. Monitor **VM Tracker** for persistent dirty memory growth in regions like `IOKit` or `VM_ALLOCATE` (often tied to unreleased image buffers or texture caches).
+
+Focus on **Call Trees** and check **Invert Call Tree** and **Hide System Libraries**. Look for allocations anchored by `facebook::react::Instance::callJSFunction` that are never deallocated.
+
+## Step 3: Real-World Pattern and Fix
+
+A common source of invisible leaks is native modules that register event listeners using JSI callbacks without providing explicit cleanup mechanisms or weak target patterns.
+
+### The Leaking Native Module (Objective-C++)
+
+Consider a custom streaming module that captures video frames and invokes a JS callback:
+
+```objc
+// UnsafeNativeStreamer.mm
+@implementation UnsafeNativeStreamer {
+  jsi::Function _jsCallback; // BAD: Retaining a raw JSI function across runtime cycles
+  FrameObserver *_observer;
+}
+
+RCT_EXPORT_METHOD(startStream:(RCTResponseSenderBlock)callback) {
+  _observer = [[FrameObserver alloc] initWithHandler:^(NSData *frameData) {
+    // Native callback keeps a strong reference to the block context indefinitely
+    callback(@[frameData]);
+  }];
+  [_observer start];
+}
+@end
+```
+
+In JavaScript, a component attaches this listener:
+
+```tsx
+// LeakyComponent.tsx
+import React, { useEffect } from 'react';
+import { NativeModules } from 'react-native';
+
+export const StreamViewer = () => {
+  useEffect(() => {
+    NativeModules.UnsafeNativeStreamer.startStream((frame) => {
+      // Every render retains a new closure scope, blocking GC on previous allocations
+      console.log('Received frame length:', frame.length);
+    });
+  }, []);
+
+  return <NativeVideoView />;
+};
+```
+
+### The Fix: Explicit Lifecycles & Native Weak References
+
+To fix this leak, pass an explicit unsubscribe token, clear native references upon cleanup, and avoid strong callback retention across runtime boundaries.
+
+#### Corrected Native Implementation:
+
+```objc
+// SafeNativeStreamer.mm
+#import <React/RCTEventEmitter.h>
+
+@interface SafeNativeStreamer : RCTEventEmitter <RCTBridgeModule>
+@end
+
+@implementation SafeNativeStreamer {
+  BOOL _hasListeners;
+  FrameObserver *_observer;
+}
+
+RCT_EXPORT_MODULE();
+
+// Optimize: React Native manages event emitter subscriptions clean-up
+-(void)startObserving {
+  _hasListeners = YES;
+  __weak typeof(self) weakSelf = self;
+  
+  _observer = [[FrameObserver alloc] initWithHandler:^(NSData *frameData) {
+    typeof(self) strongSelf = weakSelf;
+    if (strongSelf && strongSelf->_hasListeners) {
+      [strongSelf sendEventWithName:@"onFrame" body:@{@"length": @(frameData.length)}];
+    }
+  }];
+  [_observer start];
+}
+
+-(void)stopObserving {
+  _hasListeners = NO;
+  [_observer stop];
+  _observer = nil; // Drop native reference cleanly
+}
+
+-(NSArray<NSString *> *)supportedEvents {
+  return @[@"onFrame"];
+}
+@end
+```
+
+#### Corrected JS Implementation:
+
+```tsx
+// SafeComponent.tsx
+import React, { useEffect } from 'react';
+import { NativeEventEmitter, NativeModules } from 'react-native';
+
+const { SafeNativeStreamer } = NativeModules;
+const streamerEmitter = new NativeEventEmitter(SafeNativeStreamer);
+
+export const SafeStreamViewer = () => {
+  useEffect(() => {
+    const subscription = streamerEmitter.addListener('onFrame', (event) => {
+      console.log('Received frame length:', event.length);
+    });
+
+    // Tear down explicit bridge references on unmount
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  return <NativeVideoView />;
+};
+```
+
+## Takeaways for Senior Engineers
+
+- **Isolate the Environment**: Use Hermes heap snapshots to rule out JS-level closure leaks before diving into native profiling.
+- **Instrument the Boundary**: Native memory leaks caused by JSI host objects don't appear in JavaScript heap sizes. Monitor native heap metrics using Xcode Instruments (**Allocations** and **VM Tracker**).
+- **Enforce Strict Teardowns**: Every bridge subscription or custom JSI host object binding must expose an explicit, deterministic cleanup lifecycle. Never rely on non-deterministic garbage collection to free native resources.
