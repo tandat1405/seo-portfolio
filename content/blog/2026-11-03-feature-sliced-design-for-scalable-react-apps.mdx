@@ -1,0 +1,149 @@
+---
+title: "Feature-Sliced Design for Scalable React Apps"
+date: "2026-11-03"
+description: "Why traditional file-by-type structures break at scale and how Feature-Sliced Design establishes clean boundaries in complex React codebases."
+tags: ["react","architecture","design-patterns"]
+image: "/blog/images/2026-11-03-feature-sliced-design-for-scalable-react-apps.jpg"
+---
+
+As React codebases scale across large engineering teams, the architectural debt of traditional project structures compounds exponentially. Most teams start with a standard file-by-type layout—`components/`, `hooks/`, `services/`, and `utils/`. At 5,000 lines of code, this structure feels manageable; at 100,000 lines, it often devolves into a web of circular dependencies, ghost exports, and fragile cross-domain coupling. Feature-Sliced Design (FSD) solves this structural entropy by replacing arbitrary file categorization with strict, domain-driven architectural boundaries.
+
+## The Collapse of File-by-Type
+
+File-by-type organizes code by technical primitive rather than business domain. While intuitive for smaller projects, it breaks down under real-world engineering constraints:
+
+- **High Coupling, Low Cohesion:** A single domain concept (e.g., "User Checkout") spreads across six top-level directories.
+- **Leaky Abstractions:** Global `utils/` and `hooks/` become dumping grounds for domain-specific logic, making isolated unit testing nearly impossible.
+- **Unchecked Dependency Flow:** Any component can import from any directory, creating implicit, non-directional dependency graphs that break during refactoring.
+- **High Refactoring Friction:** Deleting or replacing a feature requires manual archaeology across the entire codebase to locate orphaned hooks, helper functions, and styled primitives.
+
+## The Architecture of Feature-Sliced Design
+
+Feature-Sliced Design reorganizes application code into a hierarchy of **Layers**, **Slices**, and **Segments**.
+
+### The Layer Hierarchy
+FSD organizes code into strictly ordered layers. The core rule of FSD is **strict unidirectional dependency flow**: a module can only import code from layers strictly *below* it.
+
+```text
+app       --> App configuration, providers, routing, global styles
+pages     --> Full view compositions built from lower layers
+widgets   --> Autonomous composite UI blocks (e.g., Header, OrderTable)
+features  --> User interactions carrying business value (e.g., SendMoney, FilterCatalog)
+entities  --> Business domain models (e.g., User, Product, Cart)
+shared    --> UI primitives, network clients, utility libraries
+```
+
+If `entities/user` attempts to import from `features/auth`, FSD flags this as an architectural violation. This constraint prevents circular dependencies and forces developers to move business logic to the correct level of abstraction.
+
+## Inside a Slice: Public APIs and Segments
+
+Each layer (except `app` and `shared`) is divided into domain-based **Slices**, which are further broken down into technical **Segments**.
+
+```text
+src/
+├── entities/
+│   └── user/
+│       ├── api/        # Endpoints, queries, payload transformers
+│       ├── model/      # State management (Zustand/Redux/React Query), types
+│       ├── ui/         # Domain-specific UI primitives (e.g., UserAvatar)
+│       └── index.ts    # Explicit Public API
+```
+
+### Encapsulation via Public APIs
+
+Every slice must expose a single `index.ts` file that serves as its contract. External modules are restricted from importing deep internal files directly.
+
+```typescript
+// entities/user/index.ts - Explicit Public API
+export { UserAvatar } from './ui/UserAvatar';
+export { useUserStore } from './model/store';
+export type { User } from './model/types';
+
+// Internal components (e.g., ./ui/UserAvatarBadge.tsx) remain private to the slice.
+```
+
+Consuming modules import strictly from the public boundary:
+
+```typescript
+// VALID: Consuming via the slice public API
+import { UserAvatar, useUserStore } from 'entities/user';
+
+// INVALID: Bypassing encapsulation (violates FSD boundaries)
+import { UserAvatar } from 'entities/user/ui/UserAvatar';
+```
+
+## Implementing Features with Explicit Boundaries
+
+Consider a feature that allows users to update their profile (`features/update-profile`):
+
+```tsx
+// features/update-profile/ui/UpdateProfileForm.tsx
+import React from 'react';
+import { Button, Input } from 'shared/ui';                // Layer: shared
+import { UserAvatar, useUserStore } from 'entities/user';   // Layer: entities
+import { useUpdateProfileForm } from '../model/useUpdateProfileForm'; // Internal segment
+
+export const UpdateProfileForm: React.FC = () => {
+  const { currentUser } = useUserStore();
+  const { register, handleSubmit, isLoading } = useUpdateProfileForm(currentUser);
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <UserAvatar user={currentUser} />
+      <Input {...register('username')} label="Username" />
+      <Button type="submit" loading={isLoading}>
+        Save Changes
+      </Button>
+    </form>
+  );
+};
+```
+
+Notice the architectural clarity:
+1. `UpdateProfileForm` sits in the `features` layer.
+2. It composes UI primitives from `shared` and domain logic from `entities`.
+3. Slices on the *same* layer cannot import from each other (e.g., `features/update-profile` cannot import `features/delete-account`). If cross-feature interaction is necessary, it must be hoisted to a `widget` or `page`.
+
+## Enforcing Architecture via Tooling
+
+Architecture based on manual code reviews eventually degrades. FSD relies on static analysis to enforce import boundaries in CI/CD using `@feature-sliced/eslint-config` or custom ESLint dependency-cruiser rules.
+
+```json
+// Example linting rule behavior
+{
+  "rules": {
+    "boundaries/element-types": [
+      "error",
+      {
+        "default": "disallow",
+        "rules": [
+          {
+            "from": "features",
+            "allow": ["entities", "shared"]
+          },
+          {
+            "from": "entities",
+            "allow": ["shared"]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+These rules guarantee three invariants:
+1. **No Upward Imports:** A lower layer can never import from a higher layer.
+2. **No Cross-Slice Coupling:** Slices on the same layer remain isolated.
+3. **No Private Leakage:** Direct imports bypassing `index.ts` trigger build errors.
+
+## Practical Takeaway: Transitioning to FSD
+
+Migrating an enterprise React or React Native application to Feature-Sliced Design does not require an immediate, high-risk refactor. You can adopt FSD incrementally:
+
+1. **Extract `shared/`:** Move un-opinionated UI components, design token definitions, API clients, and global utilities out of legacy `components/` and `utils/`.
+2. **Define `entities/`:** Identify primary business models (e.g., `User`, `Cart`, `Payment`) and relocate their state definitions and domain-specific UI fragments into dedicated entity slices.
+3. **Isolate `features/`:** Group user interactions and form actions into isolated feature units that export clean public APIs.
+4. **Lock Boundaries:** Add ESLint rules to prevent new boundary violations, freezing legacy spaghetti code while ensuring all new code adheres to FSD principles.
+
+FSD replaces implicit code organization with explicit structural contracts. By decoupling domain logic from UI orchestration, React codebases remain predictable, modular, and maintainable as engineering organizations scale.
