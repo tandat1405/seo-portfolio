@@ -1,0 +1,203 @@
+---
+title: "Monorepo Architecture: Sharing Logic Web to Native"
+date: "2026-11-09"
+description: "How to structure shared business logic, API clients, and state management between React and React Native using modern workspace tooling."
+tags: ["React","React Native","Architecture"]
+image: "/blog/images/2026-11-09-monorepo-architecture-sharing-logic-web-to-native.jpg"
+---
+
+The promise of write-once-run-anywhere code often collapses under the weight of UI abstractions. However, sharing core domain logic, data-fetching strategies, and state engines between React (Web) and React Native (Mobile) is not only achievable—it is an architectural force multiplier. By combining modern workspace tooling like `pnpm` workspaces and `Turborepo` with strict package boundaries, you can build a unified codebase without compromising runtime performance or developer experience.
+
+Here is how to structure a production-grade monorepo optimized for cross-platform logic sharing.
+
+## Workspace Architecture & Package Boundaries
+
+The key to a scalable monorepo is enforcing absolute isolation between platform-specific execution targets and pure TypeScript domain logic. Relying on implicit transitive dependencies creates dependency drift and leaks platform runtime primitives (like `window` or `NativeModules`) into common packages.
+
+A resilient directory structure separates applications from internal shared packages:
+
+```text
+├── apps/
+│   ├── web/               # Next.js or Vite (React DOM)
+│   └── mobile/            # Expo / React Native CLI
+└── packages/
+    ├── api-client/        # Platform-agnostic HTTP/RPC contracts
+    ├── state/             # Shared state machines and hooks
+    ├── types/             # Domain model definitions
+    └── tsconfig/          # Shared TypeScript configurations
+```
+
+In `pnpm-workspace.yaml`, define your root explicitly:
+
+```yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+```
+
+Every shared package must use explicit exports and declare zero platform dependencies. `packages/api-client` should not depend on `react-dom` or `react-native`; it must depend only on pure runtime primitives or platform-agnostic polyfills.
+
+## Abstracting Network and Data Layers
+
+Sharing API integrations starts with decoupling network execution from platform environments. Use Zod for schema validation and a generic HTTP client abstraction over `fetch` (which is standard across modern Node, browsers, and recent React Native runtimes).
+
+### Strongly Typed API Client
+
+Define your platform-agnostic client engine inside `packages/api-client/src/client.ts`:
+
+```typescript
+import { z } from 'zod';
+
+export const UserSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  name: z.string(),
+});
+
+export type User = z.infer<typeof UserSchema>;
+
+export class ApiClient {
+  constructor(private baseUrl: string, private getAuthToken: () => Promise<string | null>) {}
+
+  private async request<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit): Promise<T> {
+    const token = await this.getAuthToken();
+    const headers = new Headers(init?.headers);
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+
+    const response = await fetch(`${this.baseUrl}${path}`, { ...init, headers });
+    if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+    
+    const data = await response.json();
+    return schema.parse(data);
+  }
+
+  public getUser(id: string) {
+    return this.request(`/users/${id}`, UserSchema);
+  }
+}
+```
+
+This client remains completely isolated from UI engines and platform storage engines, taking runtime-specific concerns (like where to retrieve the token) as injected dependencies.
+
+## Cross-Platform State Management with Zustand
+
+When sharing state logic across web and mobile, state persistence is the primary point of failure. `localStorage` is unavailable in React Native, while `AsyncStorage` or `react-native-mmkv` are native-only. 
+
+To bridge this gap, implement dependency injection within your shared state stores using storage abstractions.
+
+### Defining the Injected Store Engine
+
+In `packages/state/src/store/authStore.ts`, define the store factory using Zustand:
+
+```typescript
+import { create } from 'zustand';
+import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
+
+interface AuthState {
+  token: string | null;
+  setToken: (token: string | null) => void;
+  isAuthenticated: boolean;
+}
+
+export const createAuthStore = (storage: StateStorage) => {
+  return create<AuthState>()(
+    persist(
+      (set) => ({
+        token: null,
+        isAuthenticated: false,
+        setToken: (token) => set({ token, isAuthenticated: Boolean(token) }),
+      }),
+      {
+        name: 'auth-storage',
+        storage: createJSONStorage(() => storage),
+      }
+    )
+  );
+};
+```
+
+### Initializing per Platform
+
+In your **Web App** (`apps/web/src/lib/store.ts`):
+```typescript
+import { createAuthStore } from '@repo/state';
+
+export const useAuthStore = createAuthStore(window.localStorage);
+```
+
+In your **Mobile App** (`apps/mobile/src/lib/store.ts`):
+```typescript
+import { createAuthStore } from '@repo/state';
+import { MMKV } from 'react-native-mmkv';
+
+const mmkv = new MMKV();
+const nativeStorage = {
+  getItem: (key: string) => mmkv.getString(key) ?? null,
+  setItem: (key: string, value: string) => mmkv.set(key, value),
+  removeItem: (key: string) => mmkv.delete(key),
+};
+
+export const useAuthStore = createAuthStore(nativeStorage);
+```
+
+By decoupling storage drivers at the app root, your business logic remains 100% reusable, fully typed, and platform-safe.
+
+## Managing Build Tooling & Bundling Boundaries
+
+Integrating Metro (React Native's bundler) with modern web bundlers (Vite, Next.js, or tsup) requires careful path resolution and module format management.
+
+### Metro Configuration for Internal Packages
+
+Metro does not follow standard Node module resolution rules out of the box for symlinked packages in a monorepo. Update `apps/mobile/metro.config.js` to watch your shared packages and resolve their modules properly:
+
+```javascript
+const { getDefaultConfig } = require('expo/metro-config');
+const path = require('path');
+
+const projectRoot = __dirname;
+const workspaceRoot = path.resolve(projectRoot, '../..');
+
+const config = getDefaultConfig(projectRoot);
+
+// 1. Watch all files in the monorepo
+config.watchFolders = [workspaceRoot];
+
+// 2. Let Metro resolve modules in workspace root node_modules
+config.resolver.nodeModulesPaths = [
+  path.resolve(projectRoot, 'node_modules'),
+  path.resolve(workspaceRoot, 'node_modules'),
+];
+
+// 3. Force Metro to resolve nested dependencies correctly
+config.resolver.disableHierarchicalLookup = true;
+
+module.exports = config;
+```
+
+### Package Entry Points
+
+Ensure every shared package specifies correct entry points in its `package.json` to support both ESM (for Web bundlers) and CommonJS or raw TS (for Metro):
+
+```json
+{
+  "name": "@repo/state",
+  "version": "0.0.0",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}
+```
+
+Passing uncompiled TS source directly to modern web bundlers (via Next.js `transpilePackages` or Vite plugins) and Metro speeds up iteration loops by removing explicit pre-build steps during local development.
+
+## Takeaway
+
+Resist the temptation to share UI components too early. Primitive components (`View` vs `div`) require complex abstraction layers like React Native Web, which introduce unnecessary overhead if your web and native UI specifications diverge. 
+
+Focus your monorepo architecture on **the invisible 80%**: typed data contracts, validation schemas, query caching strategies, state engines, and domain utilities. Abstract runtime APIs behind clean interfaces, inject platform dependencies at the app boundary, and let your bundlers handle resolution. This yields a maintainable architecture that accelerates development velocity on both web and native.
